@@ -16,6 +16,10 @@ output/
 
 # Working audio (keep small demo assets in examples/ only if intentional)
 *.wav
+*.mp3
+*.m4a
+*.flac
+songs/
 
 # Editors / OS
 .DS_Store

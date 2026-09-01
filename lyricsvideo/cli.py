@@ -69,6 +69,27 @@ def build_parser() -> argparse.ArgumentParser:
     themes = sub.add_parser("themes", help="List available themes")
     themes.set_defaults(command="themes")
 
+    tr = sub.add_parser(
+        "transcribe",
+        help="Transcribe sung lyrics from audio into a timed .lrc (needs faster-whisper)",
+    )
+    tr.add_argument("audio", type=Path, help="Audio file to transcribe")
+    tr.add_argument(
+        "-o", "--output", type=Path, default=None,
+        help="Output .lrc path (default: <audio-stem>.lrc next to the audio)",
+    )
+    tr.add_argument(
+        "-l", "--language", default=None,
+        help="ISO language code, e.g. pt, en, es (default: auto-detect)",
+    )
+    tr.add_argument(
+        "-m", "--model", default="medium",
+        choices=["tiny", "base", "small", "medium", "large-v3"],
+        help="Whisper model size; bigger = more accurate but slower (default: medium)",
+    )
+    tr.add_argument("--title", help="Song title written to the [ti:] tag")
+    tr.add_argument("--artist", help="Artist written to the [ar:] tag")
+
     return parser
 
 
@@ -82,6 +103,30 @@ def main(argv: list[str] | None = None) -> int:
             marker = "*" if name == DEFAULT_THEME else " "
             print(f"{marker} {name:<{width}}  {theme.description}")
         print("\n* default")
+        return 0
+
+    if args.command == "transcribe":
+        if not args.audio.is_file():
+            print(f"error: Audio file not found: {args.audio}", file=sys.stderr)
+            return 2
+        from .transcribe import TranscribeError, transcribe_to_lrc
+
+        output = args.output or args.audio.with_suffix(".lrc")
+        try:
+            result = transcribe_to_lrc(
+                audio=args.audio,
+                output=output,
+                language=args.language,
+                model_size=args.model,
+                title=args.title,
+                artist=args.artist,
+            )
+        except TranscribeError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        print(f"Wrote: {result}")
+        print("Review the words and timings before rendering — sung-vocal "
+              "transcription is rarely perfect.")
         return 0
 
     for path, label in ((args.audio, "Audio"), (args.lyrics, "Lyrics")):
