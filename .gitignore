@@ -19,7 +19,8 @@ output/
 *.mp3
 *.m4a
 *.flac
-songs/
+songs/*
+!songs/*.lrc
 
 # Editors / OS
 .DS_Store
