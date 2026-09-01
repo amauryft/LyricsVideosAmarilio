@@ -8,7 +8,8 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from .assgen import build_ass
+from .assgen import build_ass, build_columns_ass
+from .brand import Brand
 from .lrc import load_lrc
 from .themes import Theme
 
@@ -70,6 +71,8 @@ def render_video(
     title: str | None = None,
     artist: str | None = None,
     block_size: int = 1,
+    brand: Brand | None = None,
+    song_title: str | None = None,
     preview_seconds: float | None = None,
     quiet: bool = False,
 ) -> Path:
@@ -87,11 +90,26 @@ def render_video(
     if not lyrics.lines:
         raise RenderError(f"No timed lyric lines found in {lyrics_path}")
 
-    ass_text = build_ass(
-        lyrics, theme, width, height,
-        show_upcoming=show_upcoming, title=title, artist=artist,
-        block_size=block_size,
-    )
+    columns = brand is not None and brand.layout == "columns"
+    if columns:
+        ass_text = build_columns_ass(
+            lyrics, theme, width, height, duration,
+            block_size=brand.lines or block_size or 2,
+            song_title=song_title or title or lyrics.title,
+            credit=brand.credit,
+            album=brand.album if not brand.cover else None,
+            artist=artist or brand.artist,
+            title_color=brand.title_color,
+            credit_color=brand.credit_color,
+        )
+        if background is None:
+            background = brand.background
+    else:
+        ass_text = build_ass(
+            lyrics, theme, width, height,
+            show_upcoming=show_upcoming, title=title, artist=artist,
+            block_size=block_size,
+        )
 
     with tempfile.TemporaryDirectory(prefix="lyricsvideo-") as tmp:
         ass_file = Path(tmp) / "lyrics.ass"
@@ -120,6 +138,23 @@ def render_video(
         inputs += ["-i", str(audio)]
 
         base = "[bg]"
+        if columns and brand.bg_wash > 0:
+            filters.append(
+                f"color=c=white@{brand.bg_wash:.2f}:s={width}x{height}:r=30,"
+                f"format=rgba[wash]"
+            )
+            filters.append(f"{base}[wash]overlay=shortest=1:format=auto[washed]")
+            base = "[washed]"
+
+        if columns and brand.cover:
+            inputs += ["-loop", "1", "-framerate", "30", "-i", str(brand.cover)]
+            cover_w = round(width * 0.15)
+            filters.append(f"[2:v]scale={cover_w}:-1[cover]")
+            filters.append(
+                f"{base}[cover]overlay=x={round(width * 0.055)}:y={round(height * 0.105)}"
+                f":format=auto[withcover]"
+            )
+            base = "[withcover]"
         if waveform:
             wave_h = round(height * 0.18)
             wave_color = "0x" + theme.wave_color.lstrip("#")

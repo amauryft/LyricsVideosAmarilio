@@ -1,0 +1,14 @@
+{
+  "layout": "columns",
+  "font": "Playfair Display",
+  "text_color": "#203a75",
+  "dim_color": "#a5b3d3",
+  "title_color": "#2743c8",
+  "credit_color": "#174d3d",
+  "background": "../assets/ocean-wash.png",
+  "bg_wash": 0.30,
+  "album": "Sessenteando",
+  "artist": "Amarilio Fontenele",
+  "credit": "Letra e música\nAmarílio Fontenele",
+  "lines": 2
+}

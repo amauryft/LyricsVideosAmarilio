@@ -32,8 +32,8 @@ def _escape(text: str) -> str:
 
 def _color_tag(hex_color: str) -> str:
     """Inline primary-colour override, e.g. {\\1c&HBBGGRR&}."""
-    h = hex_color.lstrip("#")
-    return f"\\1c&H{h[4:6]}{h[2:4]}{h[0:2]}&".upper()
+    h = hex_color.lstrip("#").upper()
+    return f"\\1c&H{h[4:6]}{h[2:4]}{h[0:2]}&"
 
 
 def group_blocks(
@@ -142,5 +142,88 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                     events.append(
                         f"Dialogue: 0,{_ass_time(line.start)},{_ass_time(min(line.end, nxt.start))},Upcoming,,0,0,0,,{fade}{_escape(nxt.text)}"
                     )
+
+    return header + "\n".join(events) + "\n"
+
+
+def build_columns_ass(
+    lyrics: Lyrics,
+    theme: Theme,
+    width: int,
+    height: int,
+    duration: float,
+    block_size: int = 2,
+    song_title: str | None = None,
+    credit: str | None = None,
+    album: str | None = None,
+    artist: str | None = None,
+    title_color: str = "#2743C8",
+    credit_color: str = "#174D3D",
+) -> str:
+    """Three-column magazine layout on a light background.
+
+    Left: album/artist text (the cover image is composited by ffmpeg).
+    Center: left-aligned italic lyrics, block_size lines at a time, the
+    sung line in full color and the rest dimmed. Long lines wrap inside
+    the column. Right: song title and credit, shown for the whole video.
+    """
+    lyric_size = max(24, round(height * 0.072))
+    title_size = max(22, round(height * 0.046))
+    credit_size = max(14, round(height * 0.028))
+    album_size = max(16, round(height * 0.036))
+
+    margin_lyrics_l = round(width * 0.315)
+    margin_lyrics_r = round(width * 0.27)
+    margin_side = round(width * 0.055)
+
+    header = f"""[Script Info]
+Title: LyricsVideosAmarilio
+ScriptType: v4.00+
+PlayResX: {width}
+PlayResY: {height}
+WrapStyle: 0
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: ColLyrics,{theme.font},{lyric_size},{_ass_color(theme.text_color)},{_ass_color(theme.text_color)},{_ass_color("#FFFFFF", 255)},{_ass_color("#000000", 255)},0,1,0,0,100,100,0,0,1,0,0,4,{margin_lyrics_l},{margin_lyrics_r},0,1
+Style: ColTitle,{theme.font},{title_size},{_ass_color(title_color)},{_ass_color(title_color)},{_ass_color("#FFFFFF", 255)},{_ass_color("#000000", 255)},1,1,0,0,100,100,0,0,1,0,0,9,60,{margin_side},{round(height * 0.105)},1
+Style: ColCredit,{theme.font},{credit_size},{_ass_color(credit_color)},{_ass_color(credit_color)},{_ass_color("#FFFFFF", 255)},{_ass_color("#000000", 255)},1,1,0,0,100,100,0,0,1,0,0,9,60,{margin_side},{round(height * 0.185)},1
+Style: ColAlbum,{theme.font},{album_size},{_ass_color(theme.text_color)},{_ass_color(theme.text_color)},{_ass_color("#FFFFFF", 255)},{_ass_color("#000000", 255)},1,1,0,0,100,100,0,0,1,0,0,7,{margin_side},60,{round(height * 0.105)},1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+"""
+
+    events: list[str] = []
+    full = f"0,{_ass_time(0.0)},{_ass_time(duration)}"
+
+    if song_title:
+        events.append(f"Dialogue: {full},ColTitle,,0,0,0,,{_escape(song_title)}")
+    if credit:
+        credit_text = "\\N".join(_escape(part) for part in credit.splitlines())
+        events.append(f"Dialogue: {full},ColCredit,,0,0,0,,{credit_text}")
+    if album:
+        album_text = _escape(album)
+        if artist:
+            album_text += "\\N" + "{\\fs" + str(round(album_size * 0.72)) + "}" + _escape(artist)
+        events.append(f"Dialogue: {full},ColAlbum,,0,0,0,,{album_text}")
+
+    active_tag = "{" + _color_tag(theme.text_color) + "}"
+    dim_tag = "{" + _color_tag(theme.dim_color) + "}"
+    for block in group_blocks(lyrics.lines, max(1, block_size)):
+        for i, line in enumerate(block):
+            start = line.start
+            end = block[i + 1].start if i + 1 < len(block) else line.end
+            if end <= start:
+                continue
+            text = "\\N".join(
+                f"{active_tag if j == i else dim_tag}{_escape(other.text)}"
+                for j, other in enumerate(block)
+            )
+            fad = f"{{\\fad({FADE_MS if i == 0 else 0},{FADE_MS if i == len(block) - 1 else 0})}}"
+            events.append(
+                f"Dialogue: 1,{_ass_time(start)},{_ass_time(end)},ColLyrics,,0,0,0,,{fad}{text}"
+            )
 
     return header + "\n".join(events) + "\n"

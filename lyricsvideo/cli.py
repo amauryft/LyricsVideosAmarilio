@@ -66,6 +66,14 @@ def build_parser() -> argparse.ArgumentParser:
     render.add_argument("--title", help="Song title for the intro card (overrides [ti:] tag)")
     render.add_argument("--artist", help="Artist for the intro card (overrides [ar:] tag)")
     render.add_argument(
+        "--brand", type=Path, default=None, metavar="JSON",
+        help="Brand config JSON (layout, colors, fonts, cover, background)",
+    )
+    render.add_argument(
+        "--song-title", default=None,
+        help="Song title text for the columns layout (default: [ti:] tag)",
+    )
+    render.add_argument(
         "-p", "--preview", type=float, metavar="SECONDS", default=None,
         help="Render only the first N seconds (fast iteration)",
     )
@@ -145,12 +153,24 @@ def main(argv: list[str] | None = None) -> int:
     output = args.output or Path("output") / f"{args.audio.stem}.mp4"
     width, height = args.resolution
 
+    brand = None
+    theme = get_theme(args.theme)
+    if args.brand:
+        from .brand import load_brand
+
+        try:
+            brand = load_brand(args.brand)
+        except (OSError, ValueError) as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 2
+        theme = brand.apply_to(theme)
+
     try:
         result = render_video(
             audio=args.audio,
             lyrics_path=args.lyrics,
             output=output,
-            theme=get_theme(args.theme),
+            theme=theme,
             width=width,
             height=height,
             background=args.background,
@@ -159,6 +179,8 @@ def main(argv: list[str] | None = None) -> int:
             title=args.title,
             artist=args.artist,
             block_size=max(1, args.lines),
+            brand=brand,
+            song_title=args.song_title,
             preview_seconds=args.preview,
             quiet=args.quiet,
         )
