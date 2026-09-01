@@ -1,0 +1,123 @@
+"""Command line interface: `lyricsvideo` (or `python -m lyricsvideo`)."""
+
+from __future__ import annotations
+
+import argparse
+import re
+import sys
+from pathlib import Path
+
+from . import __version__
+from .render import RenderError, render_video
+from .themes import DEFAULT_THEME, THEMES, get_theme
+
+
+def _parse_resolution(value: str) -> tuple[int, int]:
+    match = re.fullmatch(r"(\d{2,5})x(\d{2,5})", value)
+    if not match:
+        raise argparse.ArgumentTypeError(
+            f"Invalid resolution {value!r}; expected WIDTHxHEIGHT, e.g. 1920x1080"
+        )
+    w, h = int(match.group(1)), int(match.group(2))
+    # libx264 with yuv420p needs even dimensions.
+    return w - w % 2, h - h % 2
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="lyricsvideo",
+        description="Render a lyrics video from an audio file and a timed .lrc lyrics file.",
+    )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    render = sub.add_parser("render", help="Render a lyrics video")
+    render.add_argument("audio", type=Path, help="Audio file (mp3, wav, flac, m4a, ...)")
+    render.add_argument("lyrics", type=Path, help="Timed lyrics file (.lrc)")
+    render.add_argument(
+        "-o", "--output", type=Path, default=None,
+        help="Output mp4 path (default: output/<audio-stem>.mp4)",
+    )
+    render.add_argument(
+        "-t", "--theme", default=DEFAULT_THEME, choices=sorted(THEMES),
+        help=f"Visual theme (default: {DEFAULT_THEME})",
+    )
+    render.add_argument(
+        "-b", "--background", type=Path, default=None,
+        help="Background image or video (replaces the theme gradient)",
+    )
+    render.add_argument(
+        "-r", "--resolution", type=_parse_resolution, default=(1920, 1080),
+        metavar="WxH", help="Output resolution (default: 1920x1080; use 1080x1920 for shorts)",
+    )
+    render.add_argument(
+        "-w", "--waveform", action="store_true",
+        help="Overlay an audio waveform near the bottom of the frame",
+    )
+    render.add_argument(
+        "--no-upcoming", action="store_true",
+        help="Hide the dimmed preview of the next lyric line",
+    )
+    render.add_argument("--title", help="Song title for the intro card (overrides [ti:] tag)")
+    render.add_argument("--artist", help="Artist for the intro card (overrides [ar:] tag)")
+    render.add_argument(
+        "-p", "--preview", type=float, metavar="SECONDS", default=None,
+        help="Render only the first N seconds (fast iteration)",
+    )
+    render.add_argument("-q", "--quiet", action="store_true", help="Suppress ffmpeg output")
+
+    themes = sub.add_parser("themes", help="List available themes")
+    themes.set_defaults(command="themes")
+
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+
+    if args.command == "themes":
+        width = max(len(name) for name in THEMES)
+        for name in sorted(THEMES):
+            theme = THEMES[name]
+            marker = "*" if name == DEFAULT_THEME else " "
+            print(f"{marker} {name:<{width}}  {theme.description}")
+        print("\n* default")
+        return 0
+
+    for path, label in ((args.audio, "Audio"), (args.lyrics, "Lyrics")):
+        if not path.is_file():
+            print(f"error: {label} file not found: {path}", file=sys.stderr)
+            return 2
+    if args.background and not args.background.is_file():
+        print(f"error: Background file not found: {args.background}", file=sys.stderr)
+        return 2
+
+    output = args.output or Path("output") / f"{args.audio.stem}.mp4"
+    width, height = args.resolution
+
+    try:
+        result = render_video(
+            audio=args.audio,
+            lyrics_path=args.lyrics,
+            output=output,
+            theme=get_theme(args.theme),
+            width=width,
+            height=height,
+            background=args.background,
+            waveform=args.waveform,
+            show_upcoming=not args.no_upcoming,
+            title=args.title,
+            artist=args.artist,
+            preview_seconds=args.preview,
+            quiet=args.quiet,
+        )
+    except RenderError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+
+    print(f"Rendered: {result}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
