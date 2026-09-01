@@ -70,6 +70,51 @@ lyricsvideo themes
 - A timestamp with no text ends the previous line early (nothing shown during the break)
 - The title card only appears if the first lyric starts at least 2.5 s in
 
+## Per-song workflow (the pattern)
+
+For each new song, from the repo root:
+
+```bash
+# 1. Put the audio in songs/
+cp ~/Downloads/minha-musica.mp3 songs/
+
+# 2. Transcribe the sung lyrics to a timed .lrc (Brazilian Portuguese: -l pt)
+python3 -m lyricsvideo transcribe songs/minha-musica.mp3 -l pt --title "Minha Música"
+
+# 3. Review songs/minha-musica.lrc — fix words, adjust timings
+
+# 4. Render with the brand
+python3 -m lyricsvideo render songs/minha-musica.mp3 songs/minha-musica.lrc \
+    --brand brands/sessenteando.json -o output/minha-musica.mp4
+```
+
+Use `--preview 30` on step 4 while iterating; drop it for the final render.
+
+### Transcription backends
+
+`transcribe` uses whichever backend is available:
+
+- **faster-whisper** (`pip install faster-whisper`) — models auto-download
+  from Hugging Face.
+- **sherpa-onnx** (`pip install sherpa-onnx numpy`) — fully offline; used
+  automatically when a models directory exists (default `/home/user/models`,
+  override with `LYRICSVIDEO_SHERPA_MODELS`). One-time setup:
+
+```bash
+mkdir -p /home/user/models && cd /home/user/models
+curl -LO https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-whisper-turbo.tar.bz2
+curl -LO https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/silero_vad.onnx
+tar xjf sherpa-onnx-whisper-turbo.tar.bz2 && rm sherpa-onnx-whisper-turbo.tar.bz2
+```
+
+## Brand configs
+
+A brand JSON (see `brands/sessenteando.json`) defines a channel's look:
+fonts, colors, the `columns` magazine layout, background image and wash,
+album cover, and credits. Render any song with `--brand` to apply it.
+The Sessenteando brand needs the Playfair Display font installed
+(`fc-list | grep Playfair` to check; download from Google Fonts).
+
 ## Try the demo
 
 Generates a synthetic 32-second track and renders it with the demo lyrics:
