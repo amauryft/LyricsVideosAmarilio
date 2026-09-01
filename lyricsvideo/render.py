@@ -69,6 +69,7 @@ def render_video(
     show_upcoming: bool = True,
     title: str | None = None,
     artist: str | None = None,
+    block_size: int = 1,
     preview_seconds: float | None = None,
     quiet: bool = False,
 ) -> Path:
@@ -89,6 +90,7 @@ def render_video(
     ass_text = build_ass(
         lyrics, theme, width, height,
         show_upcoming=show_upcoming, title=title, artist=artist,
+        block_size=block_size,
     )
 
     with tempfile.TemporaryDirectory(prefix="lyricsvideo-") as tmp:

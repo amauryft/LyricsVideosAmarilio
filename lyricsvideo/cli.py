@@ -58,6 +58,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-upcoming", action="store_true",
         help="Hide the dimmed preview of the next lyric line",
     )
+    render.add_argument(
+        "-n", "--lines", type=int, default=1, metavar="N",
+        help="Show N lyric lines at a time as a stanza, highlighting the "
+             "current one (default: 1 = single-line mode)",
+    )
     render.add_argument("--title", help="Song title for the intro card (overrides [ti:] tag)")
     render.add_argument("--artist", help="Artist for the intro card (overrides [ar:] tag)")
     render.add_argument(
@@ -153,6 +158,7 @@ def main(argv: list[str] | None = None) -> int:
             show_upcoming=not args.no_upcoming,
             title=args.title,
             artist=args.artist,
+            block_size=max(1, args.lines),
             preview_seconds=args.preview,
             quiet=args.quiet,
         )

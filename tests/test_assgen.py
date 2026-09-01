@@ -38,5 +38,50 @@ class AssGenTest(unittest.TestCase):
         self.assertNotIn("{\\b1}", doc)
 
 
+
+class BlockModeTest(unittest.TestCase):
+    def _lyrics(self, spec):
+        text = "\n".join(f"[{t}]{s}" for t, s in spec)
+        return parse_lrc(text)
+
+    def test_group_blocks_by_size_and_gap(self):
+        from lyricsvideo.assgen import group_blocks
+        lyrics = self._lyrics([
+            ("00:01.00", "a"), ("00:02.00", "b"), ("00:03.00", "c"),
+            ("00:04.00", "d"), ("00:05.00", "e"),
+        ])
+        blocks = group_blocks(lyrics.lines, 4)
+        self.assertEqual([len(b) for b in blocks], [4, 1])
+
+        # A blank marker creates a gap that starts a new block early.
+        lyrics = self._lyrics([
+            ("00:01.00", "a"), ("00:02.00", "b"), ("00:03.00", ""),
+            ("00:10.00", "c"), ("00:11.00", "d"),
+        ])
+        blocks = group_blocks(lyrics.lines, 4)
+        self.assertEqual([len(b) for b in blocks], [2, 2])
+
+    def test_block_events_highlight_each_line(self):
+        lyrics = self._lyrics([
+            ("00:01.00", "one"), ("00:02.00", "two"),
+            ("00:03.00", "three"), ("00:04.00", "four"),
+        ])
+        doc = build_ass(lyrics, get_theme("midnight"), 1920, 1080, block_size=4)
+        block_events = [l for l in doc.splitlines() if ",Block," in l]
+        self.assertEqual(len(block_events), 4)  # one event per active line
+        # Every event shows all four lines stacked.
+        for ev in block_events:
+            self.assertEqual(ev.count("\\N"), 3)
+        # First event fades in, last fades out, middles do neither.
+        self.assertIn("\\fad(250,0)", block_events[0])
+        self.assertIn("\\fad(0,0)", block_events[1])
+        self.assertIn("\\fad(0,250)", block_events[-1])
+
+    def test_single_line_mode_unchanged(self):
+        lyrics = self._lyrics([("00:01.00", "solo")])
+        doc = build_ass(lyrics, get_theme("midnight"), 1920, 1080, block_size=1)
+        self.assertIn(",Current,", doc)
+        self.assertNotIn(",Block,", doc)
+
 if __name__ == "__main__":
     unittest.main()
