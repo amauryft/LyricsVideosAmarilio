@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import functools
+import subprocess
 from typing import TYPE_CHECKING
 
 from .lrc import Lyrics, LyricLine
@@ -40,16 +42,106 @@ def _split_lyric(text: str, max_chars: int = 30) -> list[str]:
     return [text[:split].strip(), text[split + 1:].strip()]
 
 
-def _intro_title_size(title: str) -> float:
-    """Height fraction for the intro title, larger for shorter titles."""
-    n = len(title)
-    if n <= 14:
-        return 0.110
-    if n <= 22:
-        return 0.095
-    if n <= 30:
-        return 0.085
-    return 0.075
+# Right padding of the intro text column: matches the cover's left inset so
+# a title fitted to the full column reads as centered in the composition.
+_INTRO_RIGHT_PAD = 0.059
+
+
+@functools.lru_cache(maxsize=None)
+def _font_file(font: str, bold: bool) -> str | None:
+    try:
+        out = subprocess.run(
+            ["fc-match", "-f", "%{file}", f"{font}:bold" if bold else font],
+            capture_output=True, text=True, timeout=5,
+        )
+        return out.stdout.strip() or None
+    except Exception:
+        return None
+
+
+@functools.lru_cache(maxsize=4096)
+def _text_width(text: str, size: int, font: str, bold: bool = True) -> float:
+    """Pixel width of text, measured with the real font when possible."""
+    try:
+        from PIL import ImageFont
+
+        f = ImageFont.truetype(_font_file(font, bold), size)
+        try:
+            f.set_variation_by_axes([700 if bold else 400])
+        except Exception:
+            pass
+        return float(f.getlength(text))
+    except Exception:
+        return len(text) * size * 0.55
+
+
+def _balanced_split(words: tuple[str, ...], n: int, font: str) -> list[str]:
+    """Split words into n lines minimizing the widest line."""
+    if n <= 1:
+        return [" ".join(words)]
+    best_lines, best_widest = None, None
+    # Try every split point for the first line, recurse for the rest.
+    for i in range(1, len(words) - n + 2):
+        head = " ".join(words[:i])
+        rest = _balanced_split(words[i:], n - 1, font)
+        widest = max(_text_width(t, 100, font) for t in [head, *rest])
+        if best_widest is None or widest < best_widest:
+            best_lines, best_widest = [head, *rest], widest
+    return best_lines
+
+
+@functools.lru_cache(maxsize=None)
+def _font_scale(font: str) -> float:
+    """ASS font size / em size. libass (matching VSFilter) treats the ASS
+    Fontsize as the font's total height (ascent+descent), so glyphs render
+    smaller than the nominal size by this factor."""
+    try:
+        from PIL import ImageFont
+
+        f = ImageFont.truetype(_font_file(font, True), 100)
+        ascent, descent = f.getmetrics()
+        return max(1.0, (ascent + descent) / 100)
+    except Exception:
+        return 1.2
+
+
+def intro_layout(title: str, width: int, height: int, font: str) -> dict:
+    """Fitted intro typography: title wrapped and sized to fill the text
+    column, author tight beneath it, the label detached lower down.
+
+    Sizes are nominal ASS font sizes (visual em = size / _font_scale)."""
+    avail = width * (1 - SHOWCASE["intro_text_x"] - _INTRO_RIGHT_PAD)
+    scale = _font_scale(font)
+    caps = {1: 0.150, 2: 0.130, 3: 0.110}  # visual em height caps
+    words = tuple(title.split()) or ("",)
+    best_size, best_lines = 1.0, [title]
+    for n in (1, 2, 3):
+        if n > len(words):
+            break
+        lines = _balanced_split(words, n, font)
+        widest = max(_text_width(t, 100, font) for t in lines)
+        size = min(avail * 100 / max(widest, 1) * 0.97, caps[n] * height) * scale
+        # Prefer fewer lines unless more lines buy a meaningfully bigger title.
+        if size > best_size * 1.02:
+            best_size, best_lines = size, lines
+    size_frac = best_size / height
+    n = len(best_lines)
+    title_y = {1: 0.20, 2: 0.16, 3: 0.12}[n]
+    author_size = min(
+        max(0.42 * best_size, 0.048 * scale * height), 0.060 * scale * height
+    )
+    # A line advance is roughly the nominal size (the full font height).
+    author_y = title_y + n * size_frac * 1.02 + 0.022
+    label_y = max(0.60, author_y + author_size / height + 0.11)
+    return {
+        "title_size": round(best_size),
+        "title_lines": best_lines,
+        "title_y": title_y,
+        "author_size": round(author_size),
+        "author_y": author_y,
+        "label_size": round(height * 0.042 * scale),
+        "label_y": label_y,
+    }
 
 
 def showcase_block_metrics(title: str | None) -> tuple[int, float, float]:
@@ -230,19 +322,13 @@ def build_showcase_ass(
     block_title_size = max(18, round(height * 0.040))
     block_author_size = max(12, round(height * 0.024))
     _title_text = song_title or lyrics.title or ""
-    title_frac = _intro_title_size(_title_text)
-    intro_title_size = max(28, round(height * title_frac))
-    intro_author_size = max(18, round(height * 0.046))
-    intro_label_size = max(14, round(height * 0.036))
-
-    # Stack the intro texts tightly: author right under the title (however
-    # many lines it wraps to), the label a beat below the author.
-    avail_w = width * (1 - g["intro_text_x"] - 0.05)
-    chars_fit = max(8, int(avail_w / (intro_title_size * 0.52)))
-    title_lines = max(1, -(-len(_title_text) // chars_fit))
-    intro_title_y = 0.22
-    intro_author_y = intro_title_y + title_lines * title_frac * 1.24 + 0.015
-    intro_label_y = intro_author_y + 0.046 * 1.24 + 0.045
+    il = intro_layout(_title_text, width, height, theme.font)
+    intro_title_size = max(28, il["title_size"])
+    intro_author_size = max(18, il["author_size"])
+    intro_label_size = max(14, il["label_size"])
+    intro_title_y = il["title_y"]
+    intro_author_y = il["author_y"]
+    intro_label_y = il["label_y"]
 
     block_text = brand.block_text_color or theme.text_color
     pad_x = round(width * 0.012)
@@ -270,9 +356,9 @@ Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour,
 {style("Lyr", lyr_size, theme.text_color, 1, 7, round(width * g["lyr_left"]), round(width * g["lyr_right"]), round(height * 0.21))}
 {style("BlockTitle", block_title_size, block_text, 1, 7, round(width * g["block_x"]) + pad_x, block_mr, round(height * (g["block_y"] + 0.014)))}
 {style("BlockAuthor", block_author_size, block_text, 0, 7, round(width * g["block_x"]) + pad_x, block_mr, round(height * (g["block_y"] + author_off)))}
-{style("IntroTitle", intro_title_size, theme.text_color, 1, 7, round(width * g["intro_text_x"]), round(width * 0.05), round(height * intro_title_y))}
-{style("IntroAuthor", intro_author_size, theme.text_color, 0, 7, round(width * g["intro_text_x"]), round(width * 0.05), round(height * intro_author_y))}
-{style("IntroLabel", intro_label_size, theme.dim_color, 1, 7, round(width * g["intro_text_x"]), round(width * 0.05), round(height * intro_label_y))}
+{style("IntroTitle", intro_title_size, theme.text_color, 1, 7, round(width * g["intro_text_x"]), round(width * _INTRO_RIGHT_PAD), round(height * intro_title_y))}
+{style("IntroAuthor", intro_author_size, theme.text_color, 1, 7, round(width * g["intro_text_x"]), round(width * _INTRO_RIGHT_PAD), round(height * intro_author_y))}
+{style("IntroLabel", intro_label_size, theme.dim_color, 1, 7, round(width * g["intro_text_x"]), round(width * _INTRO_RIGHT_PAD), round(height * intro_label_y))}
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -285,8 +371,9 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     if intro_end > 0:
         fad = "{\\fad(400,400)}"
         if title:
+            title_text = "\\N".join(_escape(t) for t in il["title_lines"])
             events.append(
-                f"Dialogue: 0,{_ass_time(0.2)},{_ass_time(intro_end)},IntroTitle,,0,0,0,,{fad}{_escape(title)}"
+                f"Dialogue: 0,{_ass_time(0.2)},{_ass_time(intro_end)},IntroTitle,,0,0,0,,{fad}{title_text}"
             )
         if author:
             events.append(

@@ -70,6 +70,34 @@ lyricsvideo themes
 - A timestamp with no text ends the previous line early (nothing shown during the break)
 - The title card only appears if the first lyric starts at least 2.5 s in
 
+## Project guide (how this catalog is produced)
+
+These are the standing rules for the whole project:
+
+- **Catalog**: 16 songs — 4 EPs × 3 tracks (*Ainda é Tempo*, *Simplesmente
+  Graça*, *Sessenteando*, *Ele é Bom Demais*) plus 4 singles (*Como Você
+  Está?*, *Salmodiando*, *Redes Espirituais*, *Louvor com Frevor*). Tracks
+  on the same EP share that EP's brand, cover, and background.
+- **Source of truth for lyrics**: the official lyrics in
+  `assets/references/MUSICAS GRAVADAS p Lyric videos.pdf`. Transcriptions
+  (`songs/*.raw.lrc`) only provide timing anchors; the words always come
+  from the PDF.
+- **Thumbnails / intro slides**: regenerate with `python3
+  tools/make_thumbs.py` (all songs + contact sheet). Typography is
+  auto-fitted per title; the song list and song→brand mapping live in that
+  script.
+- **Videos are NOT stored in git.** `videos/` is gitignored (GitHub's file
+  limits don't fit them). Final renders are delivered as downloads and
+  stored in the Google Drive folder **[Lyrics Videos
+  Amarilio](https://drive.google.com/drive/folders/1qQ9wzEBnT16A8CZn-XjFKaWYevo4W-7d)**.
+- **Final output format — must be YouTube-ready**: 1920×1080, MP4 with
+  faststart, H.264 yuv420p 30fps progressive, AAC 192k 44.1kHz, CRF 18
+  (the renderer's defaults already produce exactly this). Verify each
+  final render with `ffprobe` before delivery. Use `--preview` and/or
+  `--resolution 960x540` for test renders; work one video at a time.
+- **Harmony rule**: in the showcase layout the live waveform matches the
+  highlighted lyric color (automatic in the renderer).
+
 ## Per-song workflow (the pattern)
 
 For each new song, from the repo root:

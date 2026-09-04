@@ -233,7 +233,11 @@ def render_video(
             base = "[wstrip]"
         if waveform:
             wave_h = round(height * (0.14 if showcase else 0.18))
-            wave_color = "0x" + theme.wave_color.lstrip("#")
+            # In the showcase layout the wave matches the highlighted lyric
+            # color so the whole composition reads as one palette.
+            wave_color = "0x" + (
+                theme.text_color if showcase else theme.wave_color
+            ).lstrip("#")
             wave_fade = (
                 f",fade=t=in:st={intro_end:.2f}:d=0.6:alpha=1"
                 if showcase and intro_end > 0 else ""
