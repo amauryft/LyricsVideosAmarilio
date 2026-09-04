@@ -1,0 +1,15 @@
+{
+  "layout": "showcase",
+  "font": "Libre Caslon Text",
+  "artist": "Amarilio Fontenele",
+  "label": "Lyrics Video",
+  "lines": 4,
+  "text_color": "#5a1c14",
+  "dim_color": "#b98868",
+  "block_bg": "#f7ecd9",
+  "block_alpha": 0.7,
+  "block_text_color": "#3d150f",
+  "wave_color": "#a04a28",
+  "background": "../assets/albums/salmodiando/bg.png",
+  "cover": "../assets/albums/salmodiando/cover.png"
+}

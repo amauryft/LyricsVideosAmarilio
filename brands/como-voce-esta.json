@@ -1,0 +1,16 @@
+{
+  "layout": "showcase",
+  "font": "Libre Caslon Text",
+  "artist": "Amarilio Fontenele",
+  "label": "Lyrics Video",
+  "lines": 4,
+  "text_color": "#f2e64e",
+  "dim_color": "#93a0e8",
+  "block_bg": "#0a1a8f",
+  "block_alpha": 0.75,
+  "block_text_color": "#f2e64e",
+  "cover_border": "#f2e64e",
+  "wave_color": "#f2e64e",
+  "background": "../assets/albums/como-voce-esta/bg.png",
+  "cover": "../assets/albums/como-voce-esta/cover.png"
+}

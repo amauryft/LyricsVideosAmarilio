@@ -1,0 +1,16 @@
+{
+  "layout": "showcase",
+  "font": "Libre Caslon Text",
+  "artist": "Amarilio Fontenele",
+  "label": "Lyrics Video",
+  "lines": 4,
+  "text_color": "#ffffff",
+  "dim_color": "#8f9be0",
+  "block_bg": "#2a35a8",
+  "block_alpha": 0.65,
+  "block_text_color": "#ffffff",
+  "cover_border": "#2646f0",
+  "wave_color": "#c94fd6",
+  "background": "../assets/albums/redes-espirituais/bg.png",
+  "cover": "../assets/albums/redes-espirituais/cover.png"
+}

@@ -1,0 +1,16 @@
+{
+  "layout": "showcase",
+  "font": "Libre Caslon Text",
+  "artist": "Amarilio Fontenele",
+  "label": "Lyrics Video",
+  "lines": 4,
+  "text_color": "#1d2fae",
+  "dim_color": "#8b93b8",
+  "block_bg": "#eceded",
+  "block_alpha": 0.8,
+  "block_text_color": "#1d2fae",
+  "cover_border": "#55504a",
+  "wave_color": "#4a5ac9",
+  "background": "../assets/albums/ainda-e-tempo/bg.png",
+  "cover": "../assets/albums/ainda-e-tempo/cover.png"
+}

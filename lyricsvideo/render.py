@@ -8,7 +8,13 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from .assgen import build_ass, build_columns_ass
+from .assgen import (
+    SHOWCASE,
+    build_ass,
+    build_columns_ass,
+    build_showcase_ass,
+    showcase_block_metrics,
+)
 from .brand import Brand
 from .lrc import load_lrc
 from .themes import Theme
@@ -91,7 +97,23 @@ def render_video(
         raise RenderError(f"No timed lyric lines found in {lyrics_path}")
 
     columns = brand is not None and brand.layout == "columns"
-    if columns:
+    showcase = brand is not None and brand.layout == "showcase"
+    if showcase:
+        waveform = True  # the live audio strip is part of this layout
+    intro_end = 0.0
+    if showcase:
+        first_start = lyrics.lines[0].start
+        if brand.intro and first_start >= 4.5:
+            intro_end = min(first_start - 0.8, 8.0)
+        ass_text = build_showcase_ass(
+            lyrics, theme, brand, width, height, duration, intro_end,
+            block_size=brand.lines or block_size or 4,
+            song_title=song_title or title,
+            author=artist or brand.artist,
+        )
+        if background is None:
+            background = brand.background
+    elif columns:
         ass_text = build_columns_ass(
             lyrics, theme, width, height, duration,
             block_size=brand.lines or block_size or 2,
@@ -155,12 +177,69 @@ def render_video(
                 f":format=auto[withcover]"
             )
             base = "[withcover]"
+
+        if showcase and brand.cover:
+            g = SHOWCASE
+            inputs += ["-loop", "1", "-framerate", "30", "-i", str(brand.cover)]
+            border = ""
+            if brand.cover_border:
+                b = max(2, round(width * 0.004))
+                border = (
+                    f",pad=iw+{2 * b}:ih+{2 * b}:{b}:{b}"
+                    f":color=0x{brand.cover_border.lstrip('#')}"
+                )
+            small_w = round(width * g["cover_w"])
+            small_x = round(width * g["cover_x"])
+            small_y = round(height * g["cover_y"])
+            if intro_end > 0:
+                big_w = round(width * g["intro_cover_w"])
+                big_x = round(width * g["intro_cover_x"])
+                xfd = 0.35
+                filters.append("[2:v]split[cbig0][csm0]")
+                filters.append(
+                    f"[cbig0]scale={big_w}:-1{border},format=rgba,"
+                    f"fade=t=out:st={intro_end - xfd:.2f}:d={xfd}:alpha=1[cbig]"
+                )
+                filters.append(
+                    f"[csm0]scale={small_w}:-1{border},format=rgba,"
+                    f"fade=t=in:st={intro_end - xfd:.2f}:d={xfd}:alpha=1[csm]"
+                )
+                filters.append(f"{base}[cbig]overlay=x={big_x}:y=(H-h)/2:format=auto[wbig]")
+                filters.append(f"[wbig][csm]overlay=x={small_x}:y={small_y}:format=auto[wcov]")
+            else:
+                filters.append(f"[2:v]scale={small_w}:-1{border}[csm]")
+                filters.append(f"{base}[csm]overlay=x={small_x}:y={small_y}:format=auto[wcov]")
+            base = "[wcov]"
+
+            # Translucent title/author strip below the cover.
+            bw = round(width * g["block_w"])
+            _, strip_h, _ = showcase_block_metrics(
+                song_title or title or lyrics.title or ""
+            )
+            bh = round(height * strip_h)
+            strip_fade = (
+                f",fade=t=in:st={max(0.0, intro_end - 0.2):.2f}:d=0.4:alpha=1"
+                if intro_end > 0 else ""
+            )
+            filters.append(
+                f"color=c=0x{brand.block_bg.lstrip('#')}@{brand.block_alpha:.2f}"
+                f":s={bw}x{bh}:r=30,format=rgba{strip_fade}[strip]"
+            )
+            filters.append(
+                f"{base}[strip]overlay=x={round(width * g['block_x'])}"
+                f":y={round(height * g['block_y'])}:format=auto[wstrip]"
+            )
+            base = "[wstrip]"
         if waveform:
-            wave_h = round(height * 0.18)
+            wave_h = round(height * (0.14 if showcase else 0.18))
             wave_color = "0x" + theme.wave_color.lstrip("#")
+            wave_fade = (
+                f",fade=t=in:st={intro_end:.2f}:d=0.6:alpha=1"
+                if showcase and intro_end > 0 else ""
+            )
             filters.append(
                 f"[1:a]showwaves=s={width}x{wave_h}:mode=cline:rate=30"
-                f":colors={wave_color}@0.55,format=rgba[wave]"
+                f":colors={wave_color}@0.55,format=rgba{wave_fade}[wave]"
             )
             filters.append(
                 f"{base}[wave]overlay=x=0:y={height - wave_h - round(height * 0.04)}"
