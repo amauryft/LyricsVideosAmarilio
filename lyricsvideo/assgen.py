@@ -23,6 +23,35 @@ SHOWCASE = {
 _BLOCK_TITLE_CHARS_PER_LINE = 19
 
 
+def _split_lyric(text: str, max_chars: int = 30) -> list[str]:
+    """Break a long lyric line roughly in half, at a comma or middle space."""
+    if len(text) <= max_chars:
+        return [text]
+    mid = len(text) / 2
+    # Prefer a comma near the middle, else the space closest to it.
+    candidates = [i for i, ch in enumerate(text) if ch == ","]
+    best_comma = min(candidates, key=lambda i: abs(i - mid), default=None)
+    if best_comma is not None and abs(best_comma - mid) <= len(text) * 0.22:
+        return [text[: best_comma + 1].strip(), text[best_comma + 1:].strip()]
+    spaces = [i for i, ch in enumerate(text) if ch == " "]
+    if not spaces:
+        return [text]
+    split = min(spaces, key=lambda i: abs(i - mid))
+    return [text[:split].strip(), text[split + 1:].strip()]
+
+
+def _intro_title_size(title: str) -> float:
+    """Height fraction for the intro title, larger for shorter titles."""
+    n = len(title)
+    if n <= 14:
+        return 0.110
+    if n <= 22:
+        return 0.095
+    if n <= 30:
+        return 0.085
+    return 0.075
+
+
 def showcase_block_metrics(title: str | None) -> tuple[int, float, float]:
     """(title_lines, strip_height_frac, author_offset_frac) for the strip.
 
@@ -197,12 +226,23 @@ def build_showcase_ass(
     ffmpeg side pairs with a larger cover overlay until intro_end.
     """
     g = SHOWCASE
-    lyr_size = max(24, round(height * 0.058))
+    lyr_size = max(24, round(height * 0.065))
     block_title_size = max(18, round(height * 0.040))
     block_author_size = max(12, round(height * 0.024))
-    intro_title_size = max(28, round(height * 0.082))
+    _title_text = song_title or lyrics.title or ""
+    title_frac = _intro_title_size(_title_text)
+    intro_title_size = max(28, round(height * title_frac))
     intro_author_size = max(18, round(height * 0.046))
     intro_label_size = max(14, round(height * 0.036))
+
+    # Stack the intro texts tightly: author right under the title (however
+    # many lines it wraps to), the label a beat below the author.
+    avail_w = width * (1 - g["intro_text_x"] - 0.05)
+    chars_fit = max(8, int(avail_w / (intro_title_size * 0.52)))
+    title_lines = max(1, -(-len(_title_text) // chars_fit))
+    intro_title_y = 0.22
+    intro_author_y = intro_title_y + title_lines * title_frac * 1.24 + 0.015
+    intro_label_y = intro_author_y + 0.046 * 1.24 + 0.045
 
     block_text = brand.block_text_color or theme.text_color
     pad_x = round(width * 0.012)
@@ -227,12 +267,12 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-{style("Lyr", lyr_size, theme.text_color, 0, 4, round(width * g["lyr_left"]), round(width * g["lyr_right"]), 0)}
+{style("Lyr", lyr_size, theme.text_color, 1, 4, round(width * g["lyr_left"]), round(width * g["lyr_right"]), 0)}
 {style("BlockTitle", block_title_size, block_text, 1, 7, round(width * g["block_x"]) + pad_x, block_mr, round(height * (g["block_y"] + 0.014)))}
 {style("BlockAuthor", block_author_size, block_text, 0, 7, round(width * g["block_x"]) + pad_x, block_mr, round(height * (g["block_y"] + author_off)))}
-{style("IntroTitle", intro_title_size, theme.text_color, 1, 7, round(width * g["intro_text_x"]), round(width * 0.05), round(height * 0.20))}
-{style("IntroAuthor", intro_author_size, theme.text_color, 0, 7, round(width * g["intro_text_x"]), round(width * 0.05), round(height * 0.47))}
-{style("IntroLabel", intro_label_size, theme.dim_color, 1, 7, round(width * g["intro_text_x"]), round(width * 0.05), round(height * 0.68))}
+{style("IntroTitle", intro_title_size, theme.text_color, 1, 7, round(width * g["intro_text_x"]), round(width * 0.05), round(height * intro_title_y))}
+{style("IntroAuthor", intro_author_size, theme.text_color, 0, 7, round(width * g["intro_text_x"]), round(width * 0.05), round(height * intro_author_y))}
+{style("IntroLabel", intro_label_size, theme.dim_color, 1, 7, round(width * g["intro_text_x"]), round(width * 0.05), round(height * intro_label_y))}
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -275,10 +315,14 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             end = block[i + 1].start if i + 1 < len(block) else line.end
             if end <= start:
                 continue
-            text = "\\N".join(
-                f"{active_tag if j == i else dim_tag}{_escape(other.text)}"
-                for j, other in enumerate(block)
-            )
+            rows = []
+            for j, other in enumerate(block):
+                tag = active_tag if j == i else dim_tag
+                # Long lines break roughly in half; both rows share the
+                # line's highlight state.
+                for part in _split_lyric(other.text):
+                    rows.append(f"{tag}{_escape(part)}")
+            text = "\\N".join(rows)
             fad = f"{{\\fad({FADE_MS if i == 0 else 0},{FADE_MS if i == len(block) - 1 else 0})}}"
             events.append(
                 f"Dialogue: 1,{_ass_time(start)},{_ass_time(end)},Lyr,,0,0,0,,{fad}{text}"
