@@ -11,5 +11,6 @@
   "block_text_color": "#16279e",
   "wave_color": "#e0b520",
   "background": "../assets/albums/louvor-com-frevor/bg.png",
-  "cover": "../assets/albums/louvor-com-frevor/cover.png"
+  "cover": "../assets/albums/louvor-com-frevor/cover.png",
+  "cover_border": "#16279e"
 }

@@ -11,5 +11,6 @@
   "block_text_color": "#3a2818",
   "wave_color": "#b98a4a",
   "background": "../assets/albums/sessenteando/bg.png",
-  "cover": "../assets/albums/sessenteando/cover.png"
+  "cover": "../assets/albums/sessenteando/cover.png",
+  "cover_border": "#4a3221"
 }

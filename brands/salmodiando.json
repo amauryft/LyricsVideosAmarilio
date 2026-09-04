@@ -11,5 +11,6 @@
   "block_text_color": "#3d150f",
   "wave_color": "#a04a28",
   "background": "../assets/albums/salmodiando/bg.png",
-  "cover": "../assets/albums/salmodiando/cover.png"
+  "cover": "../assets/albums/salmodiando/cover.png",
+  "cover_border": "#5a1c14"
 }

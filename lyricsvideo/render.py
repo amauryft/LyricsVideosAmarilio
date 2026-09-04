@@ -181,13 +181,14 @@ def render_video(
         if showcase and brand.cover:
             g = SHOWCASE
             inputs += ["-loop", "1", "-framerate", "30", "-i", str(brand.cover)]
-            border = ""
-            if brand.cover_border:
-                b = max(2, round(width * 0.004))
-                border = (
-                    f",pad=iw+{2 * b}:ih+{2 * b}:{b}:{b}"
-                    f":color=0x{brand.cover_border.lstrip('#')}"
-                )
+            # Every cover gets a hard border to separate it from the art;
+            # brands can pick the color, else the theme text color is used.
+            border_color = brand.cover_border or theme.text_color
+            b = max(2, round(width * 0.004))
+            border = (
+                f",pad=iw+{2 * b}:ih+{2 * b}:{b}:{b}"
+                f":color=0x{border_color.lstrip('#')}"
+            )
             small_w = round(width * g["cover_w"])
             small_x = round(width * g["cover_x"])
             small_y = round(height * g["cover_y"])

@@ -9,7 +9,7 @@
   "block_bg": "#eceded",
   "block_alpha": 0.8,
   "block_text_color": "#1d2fae",
-  "cover_border": "#55504a",
+  "cover_border": "#1d2fae",
   "wave_color": "#4a5ac9",
   "background": "../assets/albums/ainda-e-tempo/bg.png",
   "cover": "../assets/albums/ainda-e-tempo/cover.png"
