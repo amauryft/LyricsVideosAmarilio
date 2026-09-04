@@ -100,6 +100,11 @@ These are the standing rules for the whole project:
   `--resolution 960x540` for test renders; work one video at a time.
 - **Harmony rule**: in the showcase layout the live waveform matches the
   highlighted lyric color (automatic in the renderer).
+- **Anticipation rule**: lyrics always run ahead of the audio — every
+  line appears ~1.5s early (renderer `--lead`, default 1.5; use up to ~2
+  when a song's timings feel late) and a new stanza block appears an
+  extra ~1.2s earlier still, so viewers can refocus before the singing
+  catches up. Never let the lyrics lag the voice.
 
 ## Per-song workflow (the pattern)
 

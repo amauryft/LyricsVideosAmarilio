@@ -158,6 +158,7 @@ def showcase_block_metrics(title: str | None) -> tuple[int, float, float]:
 
 FADE_MS = 250
 BLOCK_GAP_BREAK = 2.5  # a silence this long starts a new lyric block
+BLOCK_PREROLL = 1.2  # a new block appears this early so viewers can refocus
 TITLE_CARD_MIN_LEAD = 2.5  # only show a title card if lyrics start this late
 TITLE_CARD_MAX = 6.0
 
@@ -396,10 +397,17 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
     active_tag = "{" + _color_tag(theme.text_color) + "}"
     dim_tag = "{" + _color_tag(theme.dim_color) + "}"
+    prev_block_end = intro_end
     for block in group_blocks(lyrics.lines, max(1, block_size)):
         for i, line in enumerate(block):
             start = line.start
             end = block[i + 1].start if i + 1 < len(block) else line.end
+            if i == 0:
+                # A new block appears early so viewers can refocus before
+                # the audio reaches it (never overlapping the prior block).
+                start = max(prev_block_end, start - BLOCK_PREROLL)
+            if i == len(block) - 1:
+                prev_block_end = end
             if end <= start:
                 continue
             rows = []

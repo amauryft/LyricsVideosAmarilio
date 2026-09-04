@@ -81,6 +81,7 @@ def render_video(
     song_title: str | None = None,
     preview_seconds: float | None = None,
     quiet: bool = False,
+    lead: float = 1.5,
 ) -> Path:
     """Render the lyrics video and return the output path."""
     ffmpeg = _require("ffmpeg")
@@ -95,6 +96,13 @@ def render_video(
     lyrics = load_lrc(lyrics_path, audio_duration=duration)
     if not lyrics.lines:
         raise RenderError(f"No timed lyric lines found in {lyrics_path}")
+
+    # Show every lyric slightly before it is sung so viewers read ahead
+    # of the audio instead of chasing it.
+    if lead > 0:
+        for ln in lyrics.lines:
+            ln.start = max(0.0, ln.start - lead)
+            ln.end = max(ln.start + 0.1, ln.end - lead)
 
     columns = brand is not None and brand.layout == "columns"
     showcase = brand is not None and brand.layout == "showcase"

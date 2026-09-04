@@ -77,6 +77,11 @@ def build_parser() -> argparse.ArgumentParser:
         "-p", "--preview", type=float, metavar="SECONDS", default=None,
         help="Render only the first N seconds (fast iteration)",
     )
+    render.add_argument(
+        "--lead", type=float, default=1.5, metavar="SECONDS",
+        help="Show each lyric this early so viewers read ahead of the "
+             "audio (default: 1.5)",
+    )
     render.add_argument("-q", "--quiet", action="store_true", help="Suppress ffmpeg output")
 
     themes = sub.add_parser("themes", help="List available themes")
@@ -183,6 +188,7 @@ def main(argv: list[str] | None = None) -> int:
             song_title=args.song_title,
             preview_seconds=args.preview,
             quiet=args.quiet,
+            lead=args.lead,
         )
     except RenderError as exc:
         print(f"error: {exc}", file=sys.stderr)
