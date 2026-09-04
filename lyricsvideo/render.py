@@ -243,7 +243,7 @@ def render_video(
                 if showcase and intro_end > 0 else ""
             )
             filters.append(
-                f"[1:a]showwaves=s={width}x{wave_h}:mode=cline:rate=30"
+                f"[1:a]showwaves=s={width}x{wave_h}:mode=cline:rate=30:draw=full"
                 f":colors={wave_color}@0.55,format=rgba{wave_fade}[wave]"
             )
             filters.append(
