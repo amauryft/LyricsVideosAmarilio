@@ -90,9 +90,11 @@ These are the standing rules for the whole project:
   limits don't fit them). Final renders are delivered as downloads and
   stored in the Google Drive folder **[Lyrics Videos
   Amarilio](https://drive.google.com/drive/folders/1qQ9wzEBnT16A8CZn-XjFKaWYevo4W-7d)**.
-- **Final output format**: 1920×1080 H.264 (the renderer's defaults,
-  CRF 18). Use `--preview` and/or `--resolution 960x540` for test renders;
-  work one video at a time.
+- **Final output format — must be YouTube-ready**: 1920×1080, MP4 with
+  faststart, H.264 yuv420p 30fps progressive, AAC 192k 44.1kHz, CRF 18
+  (the renderer's defaults already produce exactly this). Verify each
+  final render with `ffprobe` before delivery. Use `--preview` and/or
+  `--resolution 960x540` for test renders; work one video at a time.
 - **Harmony rule**: in the showcase layout the live waveform matches the
   highlighted lyric color (automatic in the renderer).
 
