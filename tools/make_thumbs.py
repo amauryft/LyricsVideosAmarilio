@@ -42,6 +42,7 @@ SONGS = [
     ("salmodiando", "Salmodiando", "salmodiando"),
     ("redes-espirituais", "Redes Espirituais", "redes-espirituais"),
     ("louvor-com-frevor", "Louvor com Frevor", "louvor-com-frevor"),
+    ("simplesmente-graca", "Simplesmente Graça", "simplesmente-graca"),
 ]
 
 

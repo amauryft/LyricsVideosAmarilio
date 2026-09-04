@@ -1,0 +1,16 @@
+{
+  "layout": "showcase",
+  "font": "Libre Caslon Text",
+  "artist": "Amarilio Fontenele",
+  "label": "Lyrics Video",
+  "lines": 4,
+  "text_color": "#14555e",
+  "dim_color": "#6fa1a6",
+  "block_bg": "#f2ede2",
+  "block_alpha": 0.75,
+  "block_text_color": "#14555e",
+  "cover_border": "#14555e",
+  "wave_color": "#2b8a93",
+  "background": "../assets/albums/simplesmente-graca/bg.jpg",
+  "cover": "../assets/albums/simplesmente-graca/cover.jpg"
+}
