@@ -86,10 +86,13 @@ These are the standing rules for the whole project:
   tools/make_thumbs.py` (all songs + contact sheet). Typography is
   auto-fitted per title; the song list and song→brand mapping live in that
   script.
-- **Videos are NOT stored in git.** `videos/` is gitignored (GitHub's file
-  limits don't fit them). Final renders are delivered as downloads and
-  stored in the Google Drive folder **[Lyrics Videos
+- **Videos are NOT stored in git.** `videos/` is gitignored. Long-term
+  storage is the Google Drive folder **[Lyrics Videos
   Amarilio](https://drive.google.com/drive/folders/1qQ9wzEBnT16A8CZn-XjFKaWYevo4W-7d)**.
+  Delivery of a finished render: files under 30 MB are sent directly in
+  chat; bigger ones ride the temporary `videos-delivery` branch (download
+  the raw file from GitHub, save it to Drive, then the branch commit can
+  be deleted — it is a transfer pipe, not storage).
 - **Final output format — must be YouTube-ready**: 1920×1080, MP4 with
   faststart, H.264 yuv420p 30fps progressive, AAC 192k 44.1kHz, CRF 18
   (the renderer's defaults already produce exactly this). Verify each
