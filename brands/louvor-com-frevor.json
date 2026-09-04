@@ -1,0 +1,15 @@
+{
+  "layout": "showcase",
+  "font": "Libre Caslon Text",
+  "artist": "Amarilio Fontenele",
+  "label": "Lyrics Video",
+  "lines": 4,
+  "text_color": "#16279e",
+  "dim_color": "#9aa4d4",
+  "block_bg": "#fdf3d4",
+  "block_alpha": 0.85,
+  "block_text_color": "#16279e",
+  "wave_color": "#e0b520",
+  "background": "../assets/albums/louvor-com-frevor/bg.png",
+  "cover": "../assets/albums/louvor-com-frevor/cover.png"
+}
