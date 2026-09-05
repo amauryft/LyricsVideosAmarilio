@@ -42,7 +42,7 @@ SONGS = [
     ("salmodiando", "Salmodiando", "salmodiando"),
     ("redes-espirituais", "Redes Espirituais", "redes-espirituais"),
     ("louvor-com-frevor", "Louvor com Frevor", "louvor-com-frevor"),
-    ("simplesmente-graca", "Simplesmente Graça", "simplesmente-graca"),
+    ("abundante-graca", "Abundante Graça", "simplesmente-graca"),
     ("reviravolta-de-amor", "Reviravolta de Amor", "simplesmente-graca"),
     ("eu-sei-que-um-dia-vira", "Eu Sei Que Um Dia Virá", "simplesmente-graca"),
 ]
