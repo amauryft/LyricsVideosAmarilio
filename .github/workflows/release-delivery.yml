@@ -1,0 +1,33 @@
+name: Publish EP delivery release
+
+on:
+  push:
+    branches: [videos-delivery]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reassemble split videos
+        run: |
+          cd videos
+          cat 29-de-dezembro-delivery.mp4.part00 29-de-dezembro-delivery.mp4.part01 > 29-de-dezembro-delivery.mp4
+          echo "403d1bb60f2237f7ee307becf8153daa24ac03805c581911f7b4baa9d937eb77  29-de-dezembro-delivery.mp4" | sha256sum -c -
+
+      - name: Create release with whole files
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create sessenteando-ep \
+            --target "$GITHUB_SHA" \
+            --title "Sessenteando EP - lyrics videos (1080p delivery)" \
+            --notes "Final renders of the Sessenteando EP: Sessenteando, 29 de Dezembro, Cancao de Perdao e Paz. Each file downloads whole - no reassembly needed. Save the files to Drive; afterwards this release and the videos-delivery commits can be deleted." \
+            videos/sessenteando-delivery.mp4 \
+            videos/29-de-dezembro-delivery.mp4 \
+            videos/cancao-de-perdao-e-paz-delivery.mp4
