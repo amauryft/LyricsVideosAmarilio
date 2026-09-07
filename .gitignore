@@ -26,3 +26,7 @@ songs/*
 .DS_Store
 .idea/
 .vscode/
+
+# ffmpeg two-pass logs and split transfer parts
+ffmpeg2pass-*
+*.mp4.part*

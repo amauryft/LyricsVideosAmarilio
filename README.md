@@ -77,7 +77,15 @@ These are the standing rules for the whole project:
 - **Catalog**: 16 songs — 4 EPs × 3 tracks (*Ainda é Tempo*, *Simplesmente
   Graça*, *Sessenteando*, *Ele é Bom Demais*) plus 4 singles (*Como Você
   Está?*, *Salmodiando*, *Redes Espirituais*, *Louvor com Frevor*). Tracks
-  on the same EP share that EP's brand, cover, and background.
+  on the same EP share that EP's brand, cover, and background. The
+  *Simplesmente Graça* EP's opening track is titled **Abundante Graça**
+  (retitled 2026-09-05; the EP name and cover keep "Simplesmente Graça").
+  As of 2026-09-05 all 16 videos are rendered and delivered.
+- **Recordings can deviate from the PDF**: match what is actually sung.
+  Known case: the *Ele é Bom Demais* recording skips the "A ira do meu
+  Senhor" verse entirely (chorus + verse 2 only). When a transcription
+  shows a suspicious silence, cut that audio window with ffmpeg and
+  re-transcribe just the clip before assuming lyrics are there.
 - **Source of truth for lyrics**: the official lyrics in
   `assets/references/MUSICAS GRAVADAS p Lyric videos.pdf`. Transcriptions
   (`songs/*.raw.lrc`) only provide timing anchors; the words always come
@@ -89,10 +97,18 @@ These are the standing rules for the whole project:
 - **Videos are NOT stored in git.** `videos/` is gitignored. Long-term
   storage is the Google Drive folder **[Lyrics Videos
   Amarilio](https://drive.google.com/drive/folders/1qQ9wzEBnT16A8CZn-XjFKaWYevo4W-7d)**.
-  Delivery of a finished render: files under 30 MB are sent directly in
-  chat; bigger ones ride the temporary `videos-delivery` branch (download
-  the raw file from GitHub, save it to Drive, then the branch commit can
-  be deleted — it is a transfer pipe, not storage).
+  Delivery of a finished render — **chat is the primary channel** (the
+  user downloads from the conversation, not from GitHub): chat uploads
+  cap at 30 MiB per file, so make a compressed single-file copy that fits
+  (two-pass x264 sized to ~28 MiB, `-c:a aac -b:a 128k -movflags
+  +faststart`, still 1080p) and send that ONE file. Never send split
+  ".partNN" files to the user — reassembling them is not something they
+  can do. The full-quality master additionally rides the temporary
+  `videos-delivery` branch as archive (GitHub caps files at 100 MiB =
+  104,857,600 bytes; split bigger masters there with `split -b 70m` plus
+  a `<SONG>-REASSEMBLE.md`, pattern in the branch). Masters go to Drive,
+  then the branch commits can be deleted — it is a transfer pipe, not
+  storage. The Drive MCP connector cannot upload video-sized files.
 - **Final output format — must be YouTube-ready**: 1920×1080, MP4 with
   faststart, H.264 yuv420p 30fps progressive, AAC 192k 44.1kHz, CRF 18
   (the renderer's defaults already produce exactly this). Verify each
@@ -120,6 +136,31 @@ python3 -m lyricsvideo render songs/minha-musica.mp3 songs/minha-musica.lrc \
 ```
 
 Use `--preview 30` on step 4 while iterating; drop it for the final render.
+
+On step 3, the reliable pattern (used for all 10 videos on 2026-09-05):
+keep the raw transcription as `songs/<slug>.raw.lrc` (timing anchors
+only), then write the final `.lrc` with the official PDF lines placed on
+those anchors — where whisper merged several lines into one segment,
+space the official lines evenly across the segment's time span. Blank
+timed lines mark instrumental breaks. Verify a frame or two of a
+`--preview` render before committing to the full encode.
+
+### Remote sandbox setup (Claude Code on the web)
+
+The cloud container starts empty and `apt-get` and YouTube are blocked by
+the network policy. What works:
+
+- **ffmpeg/ffprobe**: static build from BtbN's GitHub *release* assets
+  (`github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz`
+  → copy `bin/ffmpeg` + `bin/ffprobe` to `/usr/local/bin`). GitHub
+  release downloads pass the proxy; `raw.githubusercontent.com` and apt
+  mirrors do not.
+- **Font**: every brand uses **Libre Caslon Text** only — fetch the ttf
+  URLs from `fonts.googleapis.com/css2?family=Libre+Caslon+Text`, save
+  to `~/.fonts`, run `fc-cache -f`.
+- **pip**: `sherpa-onnx numpy pillow pypdf` (pillow for the contact
+  sheet, pypdf to read the lyrics PDF). Whisper models per the
+  sherpa-onnx one-time setup below.
 
 ### Transcription backends
 
