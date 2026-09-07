@@ -318,8 +318,33 @@ def build_showcase_ass(
     ffmpeg side pairs with a larger cover overlay until intro_end.
     """
     g = SHOWCASE
-    lyr_size = max(24, round(height * 0.065))
-    block_title_size = max(18, round(height * 0.040))
+    # Size the lyric block in visual em terms so every font fills the column
+    # the same way (ASS Fontsize is ascent+descent, so compact-metric fonts
+    # like Libre Caslon draw larger than tall-metric ones at equal nominal
+    # size — _font_scale normalizes that, as the intro layout already does).
+    # Then auto-fit: grow to the target, shrinking only if the widest row
+    # would overflow the column or the tallest block would crowd the strip.
+    scale = _font_scale(theme.font)
+    blocks = group_blocks(lyrics.lines, max(1, block_size))
+    all_rows = [
+        part
+        for block in blocks
+        for line in block
+        for part in _split_lyric(line.text)
+        if part
+    ]
+    avail_w = width - round(width * g["lyr_left"]) - round(width * g["lyr_right"])
+    widest = max((_text_width(r, 100, theme.font, bold=True) for r in all_rows), default=1.0)
+    rows_max = max(
+        (sum(len(_split_lyric(line.text)) or 1 for line in block) for block in blocks),
+        default=1,
+    )
+    fit_w_em = avail_w * 100.0 / max(widest, 1.0)
+    fit_h_em = height * 0.57 / (rows_max * scale)
+    target_em = height * 0.058
+    lyr_em = max(height * 0.042, min(target_em, fit_w_em, fit_h_em))
+    lyr_size = max(24, round(lyr_em * scale))
+    block_title_size = max(18, round(height * 0.0325 * scale))
     block_author_size = max(12, round(height * 0.024))
     _title_text = song_title or lyrics.title or ""
     il = intro_layout(_title_text, width, height, theme.font)
@@ -400,7 +425,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
     active_tag = "{" + _color_tag(theme.text_color) + "}"
     dim_tag = "{" + _color_tag(theme.dim_color) + "}"
-    for block in group_blocks(lyrics.lines, max(1, block_size)):
+    for block in blocks:
         for i, line in enumerate(block):
             start = line.start
             end = block[i + 1].start if i + 1 < len(block) else line.end
