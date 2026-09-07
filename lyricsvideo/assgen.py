@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 SHOWCASE = {
     "cover_x": 0.0575, "cover_y": 0.111, "cover_w": 0.2275,
     "block_x": 0.0575, "block_y": 0.573, "block_w": 0.2275, "block_h": 0.105,
-    "lyr_left": 0.35, "lyr_right": 0.08,
+    "lyr_left": 0.33, "lyr_right": 0.055,
     "intro_cover_w": 0.34, "intro_cover_x": 0.059, "intro_text_x": 0.45,
 }
 
@@ -340,8 +340,8 @@ def build_showcase_ass(
         default=1,
     )
     fit_w_em = avail_w * 100.0 / max(widest, 1.0)
-    fit_h_em = height * 0.57 / (rows_max * scale)
-    target_em = height * 0.058
+    fit_h_em = height * 0.61 / (rows_max * scale)
+    target_em = height * 0.066
     lyr_em = max(height * 0.042, min(target_em, fit_w_em, fit_h_em))
     lyr_size = max(24, round(lyr_em * scale))
     block_title_size = max(18, round(height * 0.0325 * scale))
