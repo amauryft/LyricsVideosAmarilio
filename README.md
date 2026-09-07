@@ -81,6 +81,13 @@ These are the standing rules for the whole project:
   *Simplesmente Graça* EP's opening track is titled **Abundante Graça**
   (retitled 2026-09-05; the EP name and cover keep "Simplesmente Graça").
   As of 2026-09-05 all 16 videos are rendered and delivered.
+- **Next up — the *Peregrino* album (CD2, 13 tracks)**: official lyrics
+  arrived 2026-09-07 (`assets/references/CD2 PEREGRINO as Letras.pdf`)
+  and are staged per-song in `songs/peregrino/` (sentence-cased, with
+  "conferir com a gravação" notes flagging suspected PDF typos). Still
+  missing: the track audio, the album art as files
+  (`assets/albums/peregrino/cover.png` + `bg.png`), and
+  `brands/peregrino.json` — see `songs/peregrino/README.md`.
 - **Recordings can deviate from the PDF**: match what is actually sung.
   Known case: the *Ele é Bom Demais* recording skips the "A ira do meu
   Senhor" verse entirely (chorus + verse 2 only). When a transcription

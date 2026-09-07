@@ -1,0 +1,51 @@
+# Peregrino (CD2) — Faixa 13
+# Título: Samba Enredo do Cristão (Outrora... Agora... Então)
+# Autor: letra com extratos da Bíblia (RA) e música de Amarílio Fontenele
+# Tom: C
+# Fonte: assets/references/CD2 PEREGRINO as Letras.pdf
+# Obs: as referências bíblicas entre parênteses vêm impressas na letra oficial;
+#      provavelmente não são cantadas — decidir na hora de montar o .lrc se
+#      aparecem na tela.
+
+Outrora, outrora
+Quando a vida corria por conta das paixões (Ef 2:3)
+Andando na escravidão do pecado (Rm 6:17)
+Ora enganando, ora sendo enganado (2Tm 3:13)
+Eu vivia sem o conhecimento do Deus verdadeiro
+Era assim meu passado (Gl 4:8)
+Colhendo só frutos mortais (Rm 7:5)
+Curtindo a maldade tamanha (2Pe 2:13)
+Do príncipe das potestades (Ef 2:2)
+Das trevas, da ira, de tanta vergonha (Ef 5:12)
+(Ai, ai, ai, ai, ai)
+
+Agora, agora
+Quando a graça reinou para a vida eterna em Jesus (Rm 5:21)
+Liberto da escravidão do pecado
+Como servo (Rm 6:18), agora adotado
+Pelo Filho de Deus verdadeiro (Ef 1:5)
+Que me amou primeiro (Rm 5:8), eu serei conformado
+À imagem de Cristo Jesus (Rm 8:29)
+Em tudo sendo vencedor (Rm 8:37)
+Em novidade de vida (Rm 6:4)
+Vou firme na Rocha e no seu amor (1Co 15:58)
+
+Então, ã, ã, ão
+Glorificado serei
+Com todos aqueles que em Cristo cremos (Rm 8:17,30)
+No meio estará o Cordeiro
+Que eternamente todos nós louvaremos (Ap 7:17)
+Dele será toda honra, a força
+O poder e a sabedoria (Ap 7:12)
+Ao nosso Deus serviremos no seu santuário
+De noite e de dia (Ap 7:15)
+
+Então, ã, ã, ão
+Nem fome, nem sede, nem lágrima
+Dos nossos olhos jamais rolarão (Ap 7:16,17)
+Ao Deus que se assenta no trono
+E ao Cordeiro, a nossa salvação (Ap 7:10)
+Então se cumprirá a Palavra
+Escrita por Deus na nossa história:
+"Tragada foi a morte pela vitória.
+Onde está, oh! morte, a tua vitória?" (1Co 15:54,55)
