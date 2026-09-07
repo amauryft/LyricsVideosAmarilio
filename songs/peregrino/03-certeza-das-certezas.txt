@@ -3,12 +3,13 @@
 # Autor: Amarílio Fontenele
 # Tom: Dm
 # Fonte: assets/references/CD2 PEREGRINO as Letras.pdf
-# Conferir com a gravação:
-# - "Quem me faz andar pelo caminho" — o PDF traz "QUEM"; pode ser "Que me faz andar"
+# Resolvido na gravação (2026-09-07): canta-se "Que me faz andar pelo caminho"
+# (o "QUEM" do PDF era typo). A gravação repete o refrão final ("Certeza das
+# certezas... seu amor") como vamp até ~4:37.
 
 Ah! Essa certeza
 Que carrego bem no fundo do meu ser
-Quem me faz andar pelo caminho
+Que me faz andar pelo caminho
 Mesmo incerto, sem temer
 Ah! Essa certeza
 Que me fortalece na tribulação

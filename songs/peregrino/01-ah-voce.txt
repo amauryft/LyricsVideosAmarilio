@@ -5,8 +5,8 @@
 # Fonte: assets/references/CD2 PEREGRINO as Letras.pdf
 # Obs: a letra vem em duas partes (I e II) no PDF — provavelmente uma faixa só;
 #      conferir na gravação se são uma ou duas faixas.
-# Conferir com a gravação:
-# - "que você duvida se tem solução" — o PDF imprime "DÚVIDA" (acento provável de digitação)
+# Resolvido na gravação (2026-09-07): é uma faixa só (partes I e II emendadas);
+# canta-se "que você duvida se tem solução" (o "DÚVIDA" do PDF era typo).
 
 (Parte I)
 

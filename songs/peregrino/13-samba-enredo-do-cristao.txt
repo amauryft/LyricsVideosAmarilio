@@ -4,8 +4,13 @@
 # Tom: C
 # Fonte: assets/references/CD2 PEREGRINO as Letras.pdf
 # Obs: as referências bíblicas entre parênteses vêm impressas na letra oficial;
-#      provavelmente não são cantadas — decidir na hora de montar o .lrc se
-#      aparecem na tela.
+#      não são cantadas — ficaram fora do .lrc.
+# A gravação (2026-09-07) traz bastante material além do PDF: uma fala de
+# abertura ("E assim continuaremos... juntos, peregrinos..."), uma ponte
+# cantada ("Mas apesar de não ser coisa de Zé..."), a repetição do bloco
+# "Então" e uma longa coda de louvor ad-lib ("Muito obrigado...", "Tragada
+# foi a morte...", "Glória ao Senhor Jesus"). Tudo transcrito de ouvido no
+# songs/samba-enredo-do-cristao.lrc.
 
 Outrora, outrora
 Quando a vida corria por conta das paixões (Ef 2:3)

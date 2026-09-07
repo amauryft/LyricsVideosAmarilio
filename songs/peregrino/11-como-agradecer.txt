@@ -3,11 +3,9 @@
 # Autor: Amarílio Fontenele
 # Tom: B
 # Fonte: assets/references/CD2 PEREGRINO as Letras.pdf
-# Conferir com a gravação:
-# - "Se a coroa de minhas ofensas" — o PDF traz "MINHA OFENSAS" (concordância)
-# - "Minh'alma exulta, se alegra e canta" — o PDF traz "MINHA EXULTA"
-#   (provável "minh'alma exulta")
-# - "De ver sua cara" — conferir se o cantado é "cara" ou "face"
+# Resolvido na gravação (2026-09-07): canta-se "minhas ofensas", "minh'alma
+# exulta" e "de ver sua cara". A gravação repete o bloco "Como agradecer? /
+# Se mesmo remido..." + ponte inteira uma segunda vez antes dos finais.
 
 Como agradecer
 Se a sua misericórdia dura para sempre

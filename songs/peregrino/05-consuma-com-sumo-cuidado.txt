@@ -3,9 +3,9 @@
 # Autor: Amarílio Fontenele
 # Tom: F
 # Fonte: assets/references/CD2 PEREGRINO as Letras.pdf
-# Conferir com a gravação:
-# - o PDF alterna "Cntl C" e "Ctrl C" — na tela padronizar como for cantado
-# - "Que por te quis morrer" — o PDF traz "POR TE"; pode ser "que por ti quis morrer"
+# Resolvido na gravação (2026-09-07): canta-se "Que por ti quis morrer".
+# A gravação repete o refrão "É bit, byte..." também depois do 1º e do 2º
+# consuma (ver songs/consuma-com-sumo-cuidado.lrc).
 
 É bit, byte, be-bop boot
 É Facebook, Twitter, sites
@@ -62,7 +62,7 @@ Tem lógica
 Teu vazio de amor é tão grande
 Que nada no mundo pode preencher
 É do tamanho do Deus
-Que por te quis morrer
+Que por ti quis morrer
 Só seu imenso amor
 Pode te socorrer
 

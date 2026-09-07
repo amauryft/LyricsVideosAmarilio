@@ -25,19 +25,26 @@ resolver ouvindo o áudio.
 | 12 | Finalmente, Irmãos | A | `12-finalmente-irmaos.txt` |
 | 13 | Samba Enredo do Cristão | C | `13-samba-enredo-do-cristao.txt` |
 
+## Status
+
+- **Áudios**: chegaram 2026-09-07 no branch
+  `claude/lyrics-videos-project-cx2e7p` (13 MP3s "NN TÍTULO.mp3" na raiz
+  do repositório; os nomes usam Unicode decomposto — usar glob no shell).
+- **Letras cronometradas**: prontas — `songs/<slug>.raw.lrc` (âncoras da
+  transcrição) e `songs/<slug>.lrc` (final, letra oficial sobre as
+  âncoras) para as 13 faixas. Trechos que o VAD perdia foram
+  re-transcritos em clipes com +9dB (padrão do projeto). Vários typos do
+  PDF foram resolvidos de ouvido (ver os cabeçalhos "Resolvido na
+  gravação" nos .txt).
+
 ## O que ainda falta para produzir os vídeos
 
-1. **Áudios das faixas** (MIX) — nenhum chegou ainda. Quando chegarem:
-   transcrever com `python3 -m lyricsvideo transcribe <audio> -l pt`,
-   guardar o `.raw.lrc` como âncora de tempo e montar o
-   `songs/<slug>.lrc` final com as linhas destes arquivos (fluxo padrão
-   do README do projeto).
-2. **Arte do álbum como arquivo** — a capa (título azul "PEREGRINO" +
+1. **Arte do álbum como arquivo** — a capa (título azul "PEREGRINO" +
    faixa preta com "Amarilio Fontenele" em dourado sobre ondas de papel
    branco) e o fundo (ondas de papel branco) foram mostrados no chat,
    mas não vieram como arquivos. Salvar em
    `assets/albums/peregrino/cover.png` e `assets/albums/peregrino/bg.png`.
-3. **Brand** — criar `brands/peregrino.json` depois que as imagens
+2. **Brand** — criar `brands/peregrino.json` depois que as imagens
    existirem (o carregador de brand exige que os arquivos existam).
    Paleta sugerida pela capa: fundo claro de papel, azuis
    (~`#29abe2` claro / `#1b3fa0` escuro), dourado `#e0a63c`, preto da
