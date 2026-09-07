@@ -21,6 +21,8 @@ output/
 *.flac
 songs/*
 !songs/*.lrc
+# Official album lyrics staged for future videos (text only; audio rules above still apply)
+!songs/peregrino/
 
 # Editors / OS
 .DS_Store
