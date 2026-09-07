@@ -1,6 +1,7 @@
 {
   "layout": "showcase",
-  "font": "Kalnia",
+  "font": "Poppins",
+  "secondary_font": "Libre Caslon Text",
   "artist": "Amarilio Fontenele",
   "label": "Lyrics Video",
   "lines": 4,

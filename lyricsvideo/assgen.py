@@ -337,9 +337,13 @@ def build_showcase_ass(
     # Confine the block texts to the strip so long titles wrap inside it.
     block_mr = width - round(width * (g["block_x"] + g["block_w"])) + pad_x
 
-    def style(name, size, color, bold, align, ml, mr, mv):
+    # Author/label elements may use their own face (brand "secondary_font"),
+    # e.g. Peregrino: Poppins lyrics with the credits kept in Libre Caslon.
+    sec_font = getattr(brand, "secondary_font", None) or theme.font
+
+    def style(name, size, color, bold, align, ml, mr, mv, font=None):
         return (
-            f"Style: {name},{theme.font},{size},{_ass_color(color)},{_ass_color(color)},"
+            f"Style: {name},{font or theme.font},{size},{_ass_color(color)},{_ass_color(color)},"
             f"{hidden},{hidden},{bold},0,0,0,100,100,0,0,1,0,0,{align},{ml},{mr},{mv},1"
         )
 
@@ -355,10 +359,10 @@ ScaledBorderAndShadow: yes
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 {style("Lyr", lyr_size, theme.text_color, 1, 7, round(width * g["lyr_left"]), round(width * g["lyr_right"]), round(height * 0.21))}
 {style("BlockTitle", block_title_size, block_text, 1, 7, round(width * g["block_x"]) + pad_x, block_mr, round(height * (g["block_y"] + 0.014)))}
-{style("BlockAuthor", block_author_size, block_text, 0, 7, round(width * g["block_x"]) + pad_x, block_mr, round(height * (g["block_y"] + author_off)))}
+{style("BlockAuthor", block_author_size, block_text, 0, 7, round(width * g["block_x"]) + pad_x, block_mr, round(height * (g["block_y"] + author_off)), font=sec_font)}
 {style("IntroTitle", intro_title_size, theme.text_color, 1, 7, round(width * g["intro_text_x"]), round(width * _INTRO_RIGHT_PAD), round(height * intro_title_y))}
-{style("IntroAuthor", intro_author_size, theme.text_color, 1, 7, round(width * g["intro_text_x"]), round(width * _INTRO_RIGHT_PAD), round(height * intro_author_y))}
-{style("IntroLabel", intro_label_size, theme.dim_color, 1, 7, round(width * g["intro_text_x"]), round(width * _INTRO_RIGHT_PAD), round(height * intro_label_y))}
+{style("IntroAuthor", intro_author_size, theme.text_color, 1, 7, round(width * g["intro_text_x"]), round(width * _INTRO_RIGHT_PAD), round(height * intro_author_y), font=sec_font)}
+{style("IntroLabel", intro_label_size, theme.dim_color, 1, 7, round(width * g["intro_text_x"]), round(width * _INTRO_RIGHT_PAD), round(height * intro_label_y), font=sec_font)}
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
