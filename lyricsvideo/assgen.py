@@ -340,7 +340,9 @@ def build_showcase_ass(
         default=1,
     )
     fit_w_em = avail_w * 100.0 / max(widest, 1.0)
-    fit_h_em = height * 0.61 / (rows_max * scale)
+    # The lyric block hangs from the top of the album art (cover_y) and may
+    # run down to 0.82h, keeping a clear band above the waveform.
+    fit_h_em = height * (0.82 - g["cover_y"]) / (rows_max * scale)
     target_em = height * 0.066
     lyr_em = max(height * 0.042, min(target_em, fit_w_em, fit_h_em))
     lyr_size = max(24, round(lyr_em * scale))
@@ -382,7 +384,7 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-{style("Lyr", lyr_size, theme.text_color, 1, 7, round(width * g["lyr_left"]), round(width * g["lyr_right"]), round(height * 0.21))}
+{style("Lyr", lyr_size, theme.text_color, 1, 7, round(width * g["lyr_left"]), round(width * g["lyr_right"]), round(height * g["cover_y"]))}
 {style("BlockTitle", block_title_size, block_text, 1, 7, round(width * g["block_x"]) + pad_x, block_mr, round(height * (g["block_y"] + 0.014)))}
 {style("BlockAuthor", block_author_size, block_text, 0, 7, round(width * g["block_x"]) + pad_x, block_mr, round(height * (g["block_y"] + author_off)), font=sec_font)}
 {style("IntroTitle", intro_title_size, theme.text_color, 1, 7, round(width * g["intro_text_x"]), round(width * _INTRO_RIGHT_PAD), round(height * intro_title_y))}
