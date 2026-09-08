@@ -188,6 +188,9 @@ def showcase_block_metrics(title: str | None) -> tuple[int, float, float]:
 
 FADE_MS = 250
 HIGHLIGHT_FADE_MS = 150  # in-block highlight handoff: new line fades up, old fades down
+# Lift the centred lyric block by this fraction of the band: the optical
+# centre sits above the geometric one, so a measured centre reads low.
+OPTICAL_LIFT = 0.10
 BLOCK_GAP_BREAK = 2.5  # a silence this long starts a new lyric block
 BLOCK_PREROLL = 1.2  # a new block appears this early so viewers can refocus
 TITLE_CARD_MIN_LEAD = 2.5  # only show a title card if lyrics start this late
@@ -457,7 +460,11 @@ def build_showcase_ass(
     # centred on its own depth (a wrapped line makes a block taller than
     # its neighbours), which each event carries in its own MarginV.
     def margin_for(rows: int) -> int:
-        return round(max(band_top, band_top + (band_h - rows * lyr_size) / 2))
+        centred = band_top + (band_h - rows * lyr_size) / 2
+        # Optical, not geometric, centre: a block centred by measurement
+        # reads as sitting low, so lift it. Clamped to the band top so a
+        # tall block can never ride up over the album art.
+        return round(max(band_top, centred - band_h * OPTICAL_LIFT))
 
     lyr_margin_v = margin_for(rows_max)
     block_title_size = max(18, round(height * 0.0325 * scale))

@@ -161,10 +161,13 @@ These are the standing rules for the whole project:
   Barro, allowing no wrap at all gives 63px (its 55-character line in
   *Rolo Holístico* binds everything), one wrap gives 122px, two gives
   166px; the album ships at `lyric_scale` 1.12 = the one-wrap maximum.
-  The block is centred vertically in the band (album-art top down to
-  0.82h, keeping a clear strip above the waveform), anchored on the
-  tallest block so stanzas don't jump. All automatic in
-  `build_showcase_ass` — don't hardcode font sizes.
+  Each block is centred vertically in the band (album-art top down to
+  0.82h, keeping a clear strip above the waveform) on its own row count,
+  so a block with a wrapped line sits correctly too. **Centre optically,
+  not geometrically**: a measured centre reads as sitting low, so the
+  block is lifted by 10% of the band (`OPTICAL_LIFT`), clamped at the
+  band top. This applies only where the centring rule does. All
+  automatic in `build_showcase_ass` — don't hardcode font sizes.
 - **Highlight handoff**: inside a block the highlight crossfades
   between lines over 150ms (`HIGHLIGHT_FADE_MS`) — never an instant
   snap, never slower than ~300ms. Applies to the `columns` layout too.
