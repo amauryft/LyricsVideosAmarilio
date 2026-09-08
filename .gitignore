@@ -7,22 +7,22 @@ dist/
 .venv/
 venv/
 
-# Rendered output
+# Rendered output. Renders live in catalog/<type>/<release>/renders/, but the
+# video itself never enters git — Google Drive is the archive. The stills the
+# same folder holds (-thumb.png, -lyrics.png) are tracked.
 output/
 *.mp4
 *.mkv
 *.mov
 *.webm
 
-# Working audio (keep small demo assets in examples/ only if intentional)
+# Working audio, except the catalog sources: those are committed on purpose,
+# since git is the only copy that survives an ephemeral cloud session.
 *.wav
 *.mp3
 *.m4a
 *.flac
-songs/*
-!songs/*.lrc
-# Official album lyrics staged for future videos (text only; audio rules above still apply)
-!songs/peregrino/
+!catalog/*/*/assets/music/*
 
 # Editors / OS
 .DS_Store

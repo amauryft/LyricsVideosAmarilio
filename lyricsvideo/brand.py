@@ -1,24 +1,25 @@
-"""Brand configuration: a JSON file describing a channel's visual identity.
+"""Brand configuration: a JSON file describing a release's visual identity.
 
-Example (brands/sessenteando.json):
+One per release, living beside its release.json as
+catalog/<type>/<release>/brand.json, e.g.:
 
 {
-  "layout": "columns",
-  "font": "Playfair Display",
-  "text_color": "#203a75",
-  "dim_color": "#93a3c6",
-  "title_color": "#2743c8",
-  "credit_color": "#174d3d",
-  "background": "assets/ocean-wash.png",
-  "bg_wash": 0.35,
-  "cover": "assets/cover.png",
-  "album": "Sessenteando",
+  "layout": "showcase",
+  "font": "Poppins",
+  "secondary_font": "Libre Caslon Text",
+  "text_color": "#055aa7",
+  "dim_color": "#8fb6d4",
+  "block_bg": "#f3f9fd",
+  "cover_border": "#27a5d8",
+  "background": "assets/graphics/bg.png",
+  "cover": "assets/graphics/cover.png",
+  "album": "Peregrino",
   "artist": "Amarilio Fontenele",
-  "credit": "Letra e música\nAmarílio Fontenele",
-  "lines": 2
+  "lines": 4
 }
 
-Paths are resolved relative to the JSON file's directory.
+Paths are resolved relative to the JSON file's directory, so a release
+folder stays self-contained and can be moved as a unit.
 """
 
 from __future__ import annotations

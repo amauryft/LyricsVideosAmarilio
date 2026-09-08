@@ -1,0 +1,15 @@
+{
+  "slug": "como-voce-esta",
+  "type": "single",
+  "title": "Como Você Está?",
+  "artist": "Amarílio Fontenele",
+  "brand": "brand.json",
+  "tracks": [
+    {
+      "n": 1,
+      "slug": "como-voce-esta",
+      "title": "Como Você Está?",
+      "audio": "assets/music/01-como-voce-esta.mp3"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "slug": "salmodiando",
+  "type": "single",
+  "title": "Salmodiando",
+  "artist": "Amarílio Fontenele",
+  "brand": "brand.json",
+  "tracks": [
+    {
+      "n": 1,
+      "slug": "salmodiando",
+      "title": "Salmodiando",
+      "audio": "assets/music/01-salmodiando.wav"
+    }
+  ]
+}

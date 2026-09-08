@@ -1,0 +1,28 @@
+{
+  "slug": "simplesmente-graca",
+  "type": "ep",
+  "title": "Simplesmente Graça",
+  "artist": "Amarílio Fontenele",
+  "brand": "brand.json",
+  "notes": "The opening track was retitled 'Abundante Graça' on 2026-09-05; the EP name and cover keep 'Simplesmente Graça'.",
+  "tracks": [
+    {
+      "n": 1,
+      "slug": "abundante-graca",
+      "title": "Abundante Graça",
+      "audio": "assets/music/01-abundante-graca.mp3"
+    },
+    {
+      "n": 2,
+      "slug": "reviravolta-de-amor",
+      "title": "Reviravolta de Amor",
+      "audio": "assets/music/02-reviravolta-de-amor.mp3"
+    },
+    {
+      "n": 3,
+      "slug": "eu-sei-que-um-dia-vira",
+      "title": "Eu Sei Que Um Dia Virá",
+      "audio": "assets/music/03-eu-sei-que-um-dia-vira.mp3"
+    }
+  ]
+}

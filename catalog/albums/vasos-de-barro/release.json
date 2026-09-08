@@ -1,0 +1,77 @@
+{
+  "slug": "vasos-de-barro",
+  "type": "album",
+  "title": "Vasos de Barro",
+  "artist": "Amarílio Fontenele",
+  "disc": "CD1",
+  "brand": null,
+  "notes": "Sources staged, not yet produced: no brand, no timed lyrics. Track titles here come from the source filenames — confirm them against the lyrics PDF in assets/references/ when staging lyrics.",
+  "tracks": [
+    {
+      "n": 1,
+      "slug": "amigo-crente",
+      "title": "Amigo Crente",
+      "audio": "assets/music/01-amigo-crente.mp3"
+    },
+    {
+      "n": 2,
+      "slug": "o-deus-de-toda-graca",
+      "title": "O Deus de Toda Graça",
+      "audio": "assets/music/02-o-deus-de-toda-graca.mp3"
+    },
+    {
+      "n": 3,
+      "slug": "ele-voltara",
+      "title": "Ele Voltará",
+      "audio": "assets/music/03-ele-voltara.mp3"
+    },
+    {
+      "n": 4,
+      "slug": "quando-estamos-juntos",
+      "title": "Quando Estamos Juntos",
+      "audio": "assets/music/04-quando-estamos-juntos.mp3"
+    },
+    {
+      "n": 5,
+      "slug": "o-mundo-nao-entende",
+      "title": "O Mundo Não Entende",
+      "audio": "assets/music/05-o-mundo-nao-entende.mp3"
+    },
+    {
+      "n": 6,
+      "slug": "alegria",
+      "title": "Alegria",
+      "audio": "assets/music/06-alegria.mp3"
+    },
+    {
+      "n": 7,
+      "slug": "vasos-de-barro",
+      "title": "Vasos de Barro",
+      "audio": "assets/music/07-vasos-de-barro.mp3"
+    },
+    {
+      "n": 8,
+      "slug": "duvida",
+      "title": "Dúvida",
+      "audio": "assets/music/08-duvida.mp3"
+    },
+    {
+      "n": 9,
+      "slug": "chorinho-da-paz",
+      "title": "Chorinho da Paz",
+      "audio": "assets/music/09-chorinho-da-paz.mp3"
+    },
+    {
+      "n": 10,
+      "slug": "bem-aventurados",
+      "title": "Bem-Aventurados",
+      "audio": "assets/music/10-bem-aventurados.mp3"
+    },
+    {
+      "n": 11,
+      "slug": "rolo-holistico",
+      "title": "Rolo Holistico",
+      "audio": "assets/music/11-rolo-holistico.mp3"
+    }
+  ]
+}

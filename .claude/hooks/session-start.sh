@@ -35,10 +35,11 @@ fi
 
 # ---------------------------------------------------------------------------
 # 2. Brand fonts — dynamic: install every font family referenced by any
-#    brands/*.json (any key containing "font"), plus any families listed in
-#    brands/extra-fonts.txt (one Google Fonts family name per line, '#'
-#    comments allowed). Adding a brand or stocking up on fonts needs no hook
-#    change. Fetching Google Fonts CSS without a browser UA yields TTF URLs.
+#    release brand config, catalog/*/*/brand.json (any key containing
+#    "font"), plus any families listed in catalog/extra-fonts.txt (one
+#    Google Fonts family name per line, '#' comments allowed). Adding a
+#    release or stocking up on fonts needs no hook change. Fetching Google
+#    Fonts CSS without a browser UA yields TTF URLs.
 # ---------------------------------------------------------------------------
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
 
@@ -49,7 +50,7 @@ from pathlib import Path
 
 root = Path(sys.argv[1])
 fams = set()
-for p in (root / "brands").glob("*.json"):
+for p in root.glob("catalog/*/*/brand.json"):
     try:
         brand = json.loads(p.read_text())
     except Exception:
@@ -57,7 +58,7 @@ for p in (root / "brands").glob("*.json"):
     for key, val in brand.items():
         if "font" in key.lower() and isinstance(val, str) and val.strip():
             fams.add(val.strip())
-extra = root / "brands" / "extra-fonts.txt"
+extra = root / "catalog" / "extra-fonts.txt"
 if extra.is_file():
     for line in extra.read_text().splitlines():
         line = line.split("#", 1)[0].strip()

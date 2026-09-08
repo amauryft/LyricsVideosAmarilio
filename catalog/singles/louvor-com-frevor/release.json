@@ -1,0 +1,15 @@
+{
+  "slug": "louvor-com-frevor",
+  "type": "single",
+  "title": "Louvor com Frevor",
+  "artist": "Amarílio Fontenele",
+  "brand": "brand.json",
+  "tracks": [
+    {
+      "n": 1,
+      "slug": "louvor-com-frevor",
+      "title": "Louvor com Frevor",
+      "audio": "assets/music/01-louvor-com-frevor.mp3"
+    }
+  ]
+}

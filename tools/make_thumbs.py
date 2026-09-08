@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
 """Regenerate the thumbnail/intro composition slides and their contact sheet.
 
-For every song this renders the showcase intro screen (big cover, fitted
-title, author, "Lyrics Video" tag) exactly as the video renderer draws it,
-using the same brand config and ASS generation code, and saves it to
-compositions/<slug>-thumb.png. Then it assembles compositions/SHEET-thumbnails.png.
+For every track in the catalog this renders the showcase intro screen (big
+cover, fitted title, author, "Lyrics Video" tag) exactly as the video
+renderer draws it, using that release's own brand config and the same ASS
+generation code, and saves it next to the release's renders as
+catalog/<type>/<release>/renders/<slug>-thumb.png. Then it assembles
+catalog/contact-sheets/SHEET-thumbnails.png.
+
+The song list comes from the release manifests, so a new release needs no
+edit here — only its release.json and brand.json.
 
 Usage, from the repo root:
-    python3 tools/make_thumbs.py            # all songs + sheet
+    python3 tools/make_thumbs.py            # every branded track + sheet
     python3 tools/make_thumbs.py salmodiando ta-com-sede   # just these + sheet
 """
 from __future__ import annotations
@@ -22,48 +27,21 @@ sys.path.insert(0, str(ROOT))
 
 from lyricsvideo.assgen import SHOWCASE, build_showcase_ass  # noqa: E402
 from lyricsvideo.brand import load_brand  # noqa: E402
+from lyricsvideo.catalog import iter_tracks  # noqa: E402
 from lyricsvideo.lrc import Lyrics  # noqa: E402
 from lyricsvideo.themes import THEMES  # noqa: E402
 
 W, H = 1920, 1080
-
-# slug, display title, brand
-SONGS = [
-    ("ainda-e-tempo", "Ainda é Tempo", "ainda-e-tempo"),
-    ("corriqueiramente", "Corriqueiramente", "ainda-e-tempo"),
-    ("quero-lembrar-me", "Quero Lembrar-me do Meu Criador", "ainda-e-tempo"),
-    ("sessenteando", "Sessenteando", "sessenteando"),
-    ("29-de-dezembro", "29 de Dezembro", "sessenteando"),
-    ("cancao-de-perdao-e-paz", "Canção de Perdão e Paz", "sessenteando"),
-    ("ele-e-bom-demais", "Ele é Bom Demais", "ele-e-bom-demais"),
-    ("por-hoje-estou-limpo", "Por Hoje Estou Limpo", "ele-e-bom-demais"),
-    ("ta-com-sede", "Tá com Sede?", "ele-e-bom-demais"),
-    ("como-voce-esta", "Como Você Está?", "como-voce-esta"),
-    ("salmodiando", "Salmodiando", "salmodiando"),
-    ("redes-espirituais", "Redes Espirituais", "redes-espirituais"),
-    ("louvor-com-frevor", "Louvor com Frevor", "louvor-com-frevor"),
-    ("abundante-graca", "Abundante Graça", "simplesmente-graca"),
-    ("reviravolta-de-amor", "Reviravolta de Amor", "simplesmente-graca"),
-    ("eu-sei-que-um-dia-vira", "Eu Sei Que Um Dia Virá", "simplesmente-graca"),
-    # Peregrino (CD2)
-    ("ah-voce", "Ah Você!", "peregrino"),
-    ("bom-conselho", "Bom Conselho", "peregrino"),
-    ("certeza-das-certezas", "Certeza das Certezas", "peregrino"),
-    ("pelo-chao", "Pelo Chão", "peregrino"),
-    ("consuma-com-sumo-cuidado", "Consuma com Sumo Cuidado", "peregrino"),
-    ("minha-veia-de-poeta", "Minha Veia de Poeta", "peregrino"),
-    ("mas-eu-prefiro-crer", "Mas Eu Prefiro Crer", "peregrino"),
-    ("luz-rebrilhante", "Luz Rebrilhante", "peregrino"),
-    ("nicodemos", "Nicodemos", "peregrino"),
-    ("peregrino", "Peregrino", "peregrino"),
-    ("como-agradecer", "Como Agradecer?", "peregrino"),
-    ("finalmente-irmaos", "Finalmente, Irmãos", "peregrino"),
-    ("samba-enredo-do-cristao", "Samba Enredo do Cristão", "peregrino"),
-]
+SHEET = ROOT / "catalog" / "contact-sheets" / "SHEET-thumbnails.png"
 
 
-def make_thumb(slug: str, title: str, brand_slug: str, out: Path) -> None:
-    brand = load_brand(ROOT / "brands" / f"{brand_slug}.json")
+def branded_tracks():
+    """(release, track) for every track whose release has a brand config."""
+    return [(r, t) for r, t in iter_tracks() if r.brand is not None]
+
+
+def make_thumb(title: str, brand_path: Path, out: Path) -> None:
+    brand = load_brand(brand_path)
     theme = brand.apply_to(THEMES["midnight"])
     lyrics = Lyrics(lines=[], title=title, artist=brand.artist)
     ass_text = build_showcase_ass(
@@ -77,6 +55,7 @@ def make_thumb(slug: str, title: str, brand_slug: str, out: Path) -> None:
     border_color = brand.cover_border or theme.text_color
     b = max(2, round(W * 0.004))
 
+    out.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="thumb-") as tmp:
         ass_file = Path(tmp) / "intro.ass"
         ass_file.write_text(ass_text, encoding="utf-8")
@@ -101,9 +80,10 @@ def make_thumb(slug: str, title: str, brand_slug: str, out: Path) -> None:
 def make_sheet(out: Path) -> None:
     from PIL import Image, ImageDraw, ImageFont
 
+    tracks = branded_tracks()
     cols, tile_w, gap, label_h = 3, 630, 8, 34
     tile_h = round(tile_w * H / W)
-    rows = -(-len(SONGS) // cols)
+    rows = -(-len(tracks) // cols)
     sheet = Image.new(
         "RGB",
         (cols * tile_w + (cols - 1) * gap, rows * (tile_h + label_h) + (rows - 1) * gap),
@@ -116,27 +96,28 @@ def make_sheet(out: Path) -> None:
         )
     except OSError:
         font = ImageFont.load_default()
-    for i, (slug, title, _) in enumerate(SONGS):
+    for i, (_release, track) in enumerate(tracks):
         x = (i % cols) * (tile_w + gap)
         y = (i // cols) * (tile_h + label_h + gap)
-        draw.text((x + 4, y + 5), title, fill="#f0f0f0", font=font)
-        img = Image.open(ROOT / "compositions" / f"{slug}-thumb.png").resize(
-            (tile_w, tile_h), Image.LANCZOS
-        )
+        draw.text((x + 4, y + 5), track.title, fill="#f0f0f0", font=font)
+        img = Image.open(track.thumb).resize((tile_w, tile_h), Image.LANCZOS)
         sheet.paste(img, (x, y + label_h))
+    out.parent.mkdir(parents=True, exist_ok=True)
     sheet.save(out)
 
 
 def main() -> None:
     only = set(sys.argv[1:])
-    for slug, title, brand_slug in SONGS:
-        if only and slug not in only:
+    known = {t.slug for _, t in branded_tracks()}
+    for slug in sorted(only - known):
+        print(f"warning: no branded track {slug!r} in the catalog", file=sys.stderr)
+    for release, track in branded_tracks():
+        if only and track.slug not in only:
             continue
-        out = ROOT / "compositions" / f"{slug}-thumb.png"
-        make_thumb(slug, title, brand_slug, out)
-        print(f"  {out.name}")
-    make_sheet(ROOT / "compositions" / "SHEET-thumbnails.png")
-    print("  SHEET-thumbnails.png")
+        make_thumb(track.title, release.brand, track.thumb)
+        print(f"  {release.slug}/{track.thumb.name}")
+    make_sheet(SHEET)
+    print(f"  {SHEET.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

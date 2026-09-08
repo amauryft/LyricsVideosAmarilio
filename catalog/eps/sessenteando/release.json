@@ -1,0 +1,27 @@
+{
+  "slug": "sessenteando",
+  "type": "ep",
+  "title": "Sessenteando",
+  "artist": "Amarílio Fontenele",
+  "brand": "brand.json",
+  "tracks": [
+    {
+      "n": 1,
+      "slug": "sessenteando",
+      "title": "Sessenteando",
+      "audio": "assets/music/01-sessenteando.mp3"
+    },
+    {
+      "n": 2,
+      "slug": "29-de-dezembro",
+      "title": "29 de Dezembro",
+      "audio": "assets/music/02-29-de-dezembro.mp3"
+    },
+    {
+      "n": 3,
+      "slug": "cancao-de-perdao-e-paz",
+      "title": "Canção de Perdão e Paz",
+      "audio": "assets/music/03-cancao-de-perdao-e-paz.mp3"
+    }
+  ]
+}

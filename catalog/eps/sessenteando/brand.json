@@ -1,0 +1,16 @@
+{
+  "layout": "showcase",
+  "font": "Libre Caslon Text",
+  "artist": "Amarilio Fontenele",
+  "label": "Lyrics Video",
+  "lines": 4,
+  "text_color": "#4a3221",
+  "dim_color": "#b59f85",
+  "block_bg": "#e8e2d6",
+  "block_alpha": 0.75,
+  "block_text_color": "#3a2818",
+  "wave_color": "#b98a4a",
+  "background": "assets/graphics/bg.png",
+  "cover": "assets/graphics/cover.png",
+  "cover_border": "#4a3221"
+}

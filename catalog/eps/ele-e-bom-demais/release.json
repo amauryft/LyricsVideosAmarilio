@@ -1,0 +1,28 @@
+{
+  "slug": "ele-e-bom-demais",
+  "type": "ep",
+  "title": "Ele é Bom Demais",
+  "artist": "Amarílio Fontenele",
+  "brand": "brand.json",
+  "notes": "The recording skips the 'A ira do meu Senhor' verse of the title track entirely — chorus + verse 2 only.",
+  "tracks": [
+    {
+      "n": 1,
+      "slug": "ele-e-bom-demais",
+      "title": "Ele é Bom Demais",
+      "audio": "assets/music/01-ele-e-bom-demais.mp3"
+    },
+    {
+      "n": 2,
+      "slug": "por-hoje-estou-limpo",
+      "title": "Por Hoje Estou Limpo",
+      "audio": "assets/music/02-por-hoje-estou-limpo.mp3"
+    },
+    {
+      "n": 3,
+      "slug": "ta-com-sede",
+      "title": "Tá com Sede?",
+      "audio": "assets/music/03-ta-com-sede.mp3"
+    }
+  ]
+}

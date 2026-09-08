@@ -1,0 +1,88 @@
+{
+  "slug": "peregrino",
+  "type": "album",
+  "title": "Peregrino",
+  "artist": "Amarílio Fontenele",
+  "disc": "CD2",
+  "brand": "brand.json",
+  "tracks": [
+    {
+      "n": 1,
+      "slug": "ah-voce",
+      "title": "Ah Você!",
+      "audio": "assets/music/01-ah-voce.mp3"
+    },
+    {
+      "n": 2,
+      "slug": "bom-conselho",
+      "title": "Bom Conselho",
+      "audio": "assets/music/02-bom-conselho.mp3"
+    },
+    {
+      "n": 3,
+      "slug": "certeza-das-certezas",
+      "title": "Certeza das Certezas",
+      "audio": "assets/music/03-certeza-das-certezas.mp3"
+    },
+    {
+      "n": 4,
+      "slug": "pelo-chao",
+      "title": "Pelo Chão",
+      "audio": "assets/music/04-pelo-chao.mp3"
+    },
+    {
+      "n": 5,
+      "slug": "consuma-com-sumo-cuidado",
+      "title": "Consuma com Sumo Cuidado",
+      "audio": "assets/music/05-consuma-com-sumo-cuidado.mp3"
+    },
+    {
+      "n": 6,
+      "slug": "minha-veia-de-poeta",
+      "title": "Minha Veia de Poeta",
+      "audio": "assets/music/06-minha-veia-de-poeta.mp3"
+    },
+    {
+      "n": 7,
+      "slug": "mas-eu-prefiro-crer",
+      "title": "Mas Eu Prefiro Crer",
+      "audio": "assets/music/07-mas-eu-prefiro-crer.mp3"
+    },
+    {
+      "n": 8,
+      "slug": "luz-rebrilhante",
+      "title": "Luz Rebrilhante",
+      "audio": "assets/music/08-luz-rebrilhante.mp3"
+    },
+    {
+      "n": 9,
+      "slug": "nicodemos",
+      "title": "Nicodemos",
+      "audio": "assets/music/09-nicodemos.mp3"
+    },
+    {
+      "n": 10,
+      "slug": "peregrino",
+      "title": "Peregrino",
+      "audio": "assets/music/10-peregrino.mp3"
+    },
+    {
+      "n": 11,
+      "slug": "como-agradecer",
+      "title": "Como Agradecer?",
+      "audio": "assets/music/11-como-agradecer.mp3"
+    },
+    {
+      "n": 12,
+      "slug": "finalmente-irmaos",
+      "title": "Finalmente, Irmãos",
+      "audio": "assets/music/12-finalmente-irmaos.mp3"
+    },
+    {
+      "n": 13,
+      "slug": "samba-enredo-do-cristao",
+      "title": "Samba Enredo do Cristão",
+      "audio": "assets/music/13-samba-enredo-do-cristao.mp3"
+    }
+  ]
+}

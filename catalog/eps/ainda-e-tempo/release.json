@@ -1,0 +1,27 @@
+{
+  "slug": "ainda-e-tempo",
+  "type": "ep",
+  "title": "Ainda é Tempo",
+  "artist": "Amarílio Fontenele",
+  "brand": "brand.json",
+  "tracks": [
+    {
+      "n": 1,
+      "slug": "ainda-e-tempo",
+      "title": "Ainda é Tempo",
+      "audio": "assets/music/01-ainda-e-tempo.m4a"
+    },
+    {
+      "n": 2,
+      "slug": "corriqueiramente",
+      "title": "Corriqueiramente",
+      "audio": "assets/music/02-corriqueiramente.m4a"
+    },
+    {
+      "n": 3,
+      "slug": "quero-lembrar-me",
+      "title": "Quero Lembrar-me do Meu Criador",
+      "audio": "assets/music/03-quero-lembrar-me.m4a"
+    }
+  ]
+}

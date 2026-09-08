@@ -1,0 +1,15 @@
+{
+  "slug": "redes-espirituais",
+  "type": "single",
+  "title": "Redes Espirituais",
+  "artist": "Amarílio Fontenele",
+  "brand": "brand.json",
+  "tracks": [
+    {
+      "n": 1,
+      "slug": "redes-espirituais",
+      "title": "Redes Espirituais",
+      "audio": "assets/music/01-redes-espirituais.mp3"
+    }
+  ]
+}

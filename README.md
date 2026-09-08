@@ -74,6 +74,12 @@ lyricsvideo themes
 
 These are the standing rules for the whole project:
 
+- **Everything lives in `catalog/`**, one folder per release, grouped as
+  `albums/`, `eps/` and `singles/`. Each release folder holds its own
+  `release.json` manifest, `brand.json`, `assets/{graphics,music,references}/`,
+  `lyrics/` and `renders/` — always the same shape, so producing the next
+  release is the same steps as the last. The layout, the manifest format and
+  how to start a release are documented in **[`catalog/README.md`](catalog/README.md)**.
 - **Catalog**: 16 songs — 4 EPs × 3 tracks (*Ainda é Tempo*, *Simplesmente
   Graça*, *Sessenteando*, *Ele é Bom Demais*) plus 4 singles (*Como Você
   Está?*, *Salmodiando*, *Redes Espirituais*, *Louvor com Frevor*). Tracks
@@ -84,28 +90,38 @@ These are the standing rules for the whole project:
 - **The *Peregrino* album (CD2, 13 tracks)**: DONE — all 13 videos
   rendered and delivered 2026-09-08 (chat copies sent; full-quality
   files on `videos-delivery`, single file per song, pending the Drive
-  archive pull). Sources: lyrics PDF in `assets/references/`, staged
-  per-song in `songs/peregrino/`, audio on branch
-  `claude/lyrics-videos-project-cx2e7p` (root MP3s "NN TÍTULO.mp3" in
-  decomposed Unicode — address with shell globs), timed lyrics in
-  `songs/<slug>.lrc`. The brand (`brands/peregrino.json`) pairs Poppins
-  lyrics/titles with Libre Caslon Text credits via the `secondary_font`
-  brand key, and the showcase layout now auto-fits lyric size per song
-  and hangs the block from the top of the album art.
+  archive pull). Everything sits under `catalog/albums/peregrino/`: the
+  lyrics PDF and the per-track official text in `assets/references/`, the
+  13 MP3s in `assets/music/`, timed lyrics in `lyrics/`. The brand
+  (`catalog/albums/peregrino/brand.json`) pairs Poppins lyrics/titles with
+  Libre Caslon Text credits via the `secondary_font` brand key, and the
+  showcase layout auto-fits lyric size per song and hangs the block from
+  the top of the album art.
+- **The *Vasos de Barro* album (CD1, 11 tracks)**: sources staged in
+  `catalog/albums/vasos-de-barro/` (audio + lyrics PDF), no brand and no
+  timed lyrics yet — its `release.json` has `"brand": null`. The track
+  titles there came from the source filenames; confirm them against the
+  PDF when staging the lyrics.
 - **Recordings can deviate from the PDF**: match what is actually sung.
   Known case: the *Ele é Bom Demais* recording skips the "A ira do meu
   Senhor" verse entirely (chorus + verse 2 only). When a transcription
   shows a suspicious silence, cut that audio window with ffmpeg and
   re-transcribe just the clip before assuming lyrics are there.
-- **Source of truth for lyrics**: the official lyrics in
-  `assets/references/MUSICAS GRAVADAS p Lyric videos.pdf`. Transcriptions
-  (`songs/*.raw.lrc`) only provide timing anchors; the words always come
-  from the PDF.
+- **Source of truth for lyrics**: the official lyrics document — the
+  catalog-wide `catalog/references/MUSICAS GRAVADAS p Lyric videos.pdf` for
+  the EPs and singles, or the release's own PDF in its
+  `assets/references/`. Transcriptions (`lyrics/<slug>.raw.lrc`) only
+  provide timing anchors; the words always come from the PDF.
 - **Thumbnails / intro slides**: regenerate with `python3
-  tools/make_thumbs.py` (all songs + contact sheet). Typography is
-  auto-fitted per title; the song list and song→brand mapping live in that
-  script.
-- **Videos are NOT stored in git.** `videos/` is gitignored. Long-term
+  tools/make_thumbs.py` (all songs + contact sheet), which writes
+  `<release>/renders/<slug>-thumb.png` and
+  `catalog/contact-sheets/SHEET-thumbnails.png`. Typography is auto-fitted
+  per title; the song list comes from the release manifests, so a new
+  release needs no edit to the script.
+- **Videos are NOT stored in git.** `<release>/renders/*.mp4` is
+  gitignored (the stills beside it are committed). Source audio under
+  `<release>/assets/music/` *is* committed on purpose — cloud sessions are
+  ephemeral and git is the only copy that survives one. Long-term
   storage is the Google Drive folder **[Lyrics Videos
   Amarilio](https://drive.google.com/drive/folders/1qQ9wzEBnT16A8CZn-XjFKaWYevo4W-7d)**.
   Delivery of a finished render — **chat is the primary channel** (the
@@ -135,26 +151,32 @@ These are the standing rules for the whole project:
 
 ## Per-song workflow (the pattern)
 
-For each new song, from the repo root:
+Every song sits in a release folder (see
+[`catalog/README.md`](catalog/README.md)); `R` below is that folder, e.g.
+`catalog/eps/sessenteando`. From the repo root:
 
 ```bash
-# 1. Put the audio in songs/
-cp ~/Downloads/minha-musica.mp3 songs/
+R=catalog/eps/sessenteando
+
+# 1. The audio is already in the release (tools/new_release.py puts it there)
+ls $R/assets/music/
 
 # 2. Transcribe the sung lyrics to a timed .lrc (Brazilian Portuguese: -l pt)
-python3 -m lyricsvideo transcribe songs/minha-musica.mp3 -l pt --title "Minha Música"
+python3 -m lyricsvideo transcribe $R/assets/music/01-minha-musica.mp3 \
+    -l pt --title "Minha Música" -o $R/lyrics/minha-musica.raw.lrc
 
-# 3. Review songs/minha-musica.lrc — fix words, adjust timings
+# 3. Write $R/lyrics/minha-musica.lrc — official words on the raw anchors
 
-# 4. Render with the brand
-python3 -m lyricsvideo render songs/minha-musica.mp3 songs/minha-musica.lrc \
-    --brand brands/sessenteando.json -o output/minha-musica.mp4
+# 4. Render with the release's brand
+python3 -m lyricsvideo render $R/assets/music/01-minha-musica.mp3 \
+    $R/lyrics/minha-musica.lrc --brand $R/brand.json \
+    -o $R/renders/minha-musica.mp4
 ```
 
 Use `--preview 30` on step 4 while iterating; drop it for the final render.
 
 On step 3, the reliable pattern (used for all 10 videos on 2026-09-05):
-keep the raw transcription as `songs/<slug>.raw.lrc` (timing anchors
+keep the raw transcription as `lyrics/<slug>.raw.lrc` (timing anchors
 only), then write the final `.lrc` with the official PDF lines placed on
 those anchors — where whisper merged several lines into one segment,
 space the official lines evenly across the segment's time span. Blank
@@ -171,9 +193,11 @@ the network policy. What works:
   → copy `bin/ffmpeg` + `bin/ffprobe` to `/usr/local/bin`). GitHub
   release downloads pass the proxy; `raw.githubusercontent.com` and apt
   mirrors do not.
-- **Font**: every brand uses **Libre Caslon Text** only — fetch the ttf
-  URLs from `fonts.googleapis.com/css2?family=Libre+Caslon+Text`, save
-  to `~/.fonts`, run `fc-cache -f`.
+- **Fonts**: fetch the ttf URLs from
+  `fonts.googleapis.com/css2?family=Libre+Caslon+Text` (and the other
+  families named in `catalog/*/*/brand.json` and `catalog/extra-fonts.txt`),
+  save to `~/.fonts`, run `fc-cache -f`. The SessionStart hook does this
+  automatically.
 - **pip**: `sherpa-onnx numpy pillow pypdf` (pillow for the contact
   sheet, pypdf to read the lyrics PDF). Whisper models per the
   sherpa-onnx one-time setup below.
@@ -197,11 +221,15 @@ tar xjf sherpa-onnx-whisper-turbo.tar.bz2 && rm sherpa-onnx-whisper-turbo.tar.bz
 
 ## Brand configs
 
-A brand JSON (see `brands/sessenteando.json`) defines a channel's look:
-fonts, colors, the `columns` magazine layout, background image and wash,
-album cover, and credits. Render any song with `--brand` to apply it.
-The Sessenteando brand needs the Playfair Display font installed
-(`fc-list | grep Playfair` to check; download from Google Fonts).
+Each release has one `brand.json` beside its `release.json` (see
+`catalog/eps/sessenteando/brand.json`) defining its look: fonts, colors,
+the layout, background image and wash, album cover, and credits. Its
+`background` and `cover` paths resolve relative to the file itself, so
+they point into that release's own `assets/graphics/`. Render any song
+with `--brand` to apply it. The Sessenteando brand needs the Playfair
+Display font installed (`fc-list | grep Playfair` to check; the
+SessionStart hook installs every family any brand references, plus those
+listed in `catalog/extra-fonts.txt`).
 
 ## Try the demo
 
@@ -221,12 +249,21 @@ python3 -m unittest discover -s tests -v
 ## Project layout
 
 ```
+catalog/      The music: one folder per release, grouped albums / eps /
+              singles, each with its own manifest, brand, assets, lyrics
+              and renders. See catalog/README.md.
 lyricsvideo/
   lrc.py      LRC parsing → timed lyric lines
   themes.py   Visual theme presets
   assgen.py   Styled ASS subtitle generation (fades, title card, preview line)
   render.py   ffmpeg orchestration (background, waveform, subtitle burn, encode)
+  brand.py    Per-release visual identity (brand.json)
+  catalog.py  Release/track discovery from the release.json manifests
   cli.py      Command line interface
+tools/
+  make_thumbs.py   Thumbnails + contact sheet for every release
+  new_release.py   Scaffold a new release folder
+assets/       Shared engine/demo assets, not owned by any release
 examples/     Demo lyrics + demo script
 tests/        Unit tests (stdlib unittest)
 ```
