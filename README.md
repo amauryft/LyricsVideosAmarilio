@@ -92,15 +92,17 @@ These are the standing rules for the whole project:
   lyrics/titles with Libre Caslon Text credits via the `secondary_font`
   brand key, and the showcase layout now auto-fits lyric size per song
   and hangs the block from the top of the album art.
-- **The *Vasos de Barro* album (CD1, 11 tracks)**: IN PROGRESS — sources
-  arrived 2026-09-08: lyrics PDF in `assets/references/`, staged per-song
+- **The *Vasos de Barro* album (CD1, 11 tracks)**: DONE — all 11 videos
+  rendered and delivered 2026-09-08 (chat copies sent; full-quality
+  masters on `videos-delivery`, single file per song, pending the Drive
+  archive pull). Sources: lyrics PDF in `assets/references/`, staged per-song
   in `songs/vasos-de-barro/`, root MP3s "NN Título.mp3", art in
   `assets/albums/vasos-de-barro/`. The brand
   (`brands/vasos-de-barro.json`) is all Crimson Pro: song title in the
   Black weight, author + "Lyrics Video" tag in Bold, lyrics in SemiBold
   Italic colored #DA9864 (brand keys `title_font`, `lyric_italic`,
-  `lyric_bold`, `author_bold`). Track 7 (title track) rendered and
-  delivered 2026-09-08; the other 10 tracks still need timing + renders.
+  `lyric_bold`, `author_bold`) at `lyric_scale` 1.12, derived from the
+  album's one-wrap budget with `tools/lyric_scale.py`.
 - **Recordings can deviate from the PDF**: match what is actually sung.
   Known case: the *Ele é Bom Demais* recording skips the "A ira do meu
   Senhor" verse entirely (chorus + verse 2 only). When a transcription

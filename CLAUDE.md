@@ -108,7 +108,7 @@ python3 -m unittest discover -s tests -v
 - 16-song catalog (4 EPs × 3 + 4 singles): rendered and delivered
   2026-09-05.
 - *Peregrino* album (CD2, 13 tracks): rendered and delivered 2026-09-08.
-- *Vasos de Barro* (CD1, 11 tracks): rendering 2026-09-08. Lyrics PDF and
+- *Vasos de Barro* (CD1, 11 tracks): rendered and delivered 2026-09-08. Lyrics PDF and
   artwork filed (`assets/references/`, `assets/albums/vasos-de-barro/`);
   all 11 songs staged from the PDF and timed (`songs/<slug>.lrc`, with
   the `.spec` files they were generated from). Brand is
