@@ -157,7 +157,7 @@ def showcase_block_metrics(title: str | None) -> tuple[int, float, float]:
     return lines, strip_h, author_off
 
 FADE_MS = 250
-HIGHLIGHT_FADE_MS = 300  # in-block highlight handoff: new line fades up, old fades down
+HIGHLIGHT_FADE_MS = 150  # in-block highlight handoff: new line fades up, old fades down
 BLOCK_GAP_BREAK = 2.5  # a silence this long starts a new lyric block
 BLOCK_PREROLL = 1.2  # a new block appears this early so viewers can refocus
 TITLE_CARD_MIN_LEAD = 2.5  # only show a title card if lyrics start this late
