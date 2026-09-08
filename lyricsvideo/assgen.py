@@ -452,12 +452,14 @@ def build_showcase_ass(
             lyr_em, wrapped, blocks, rows_max = em, w2, b2, r2
             break
     lyr_size = max(24, round(lyr_em * scale))
-    # Once the row cap frees up height, a full block rarely fills the band,
-    # so centre it there rather than hanging it from the top. The offset is
-    # computed from the tallest block so every stanza shares one anchor —
-    # centring each block on its own row count would make the text jump
-    # between stanzas of different depth.
-    lyr_margin_v = round(max(band_top, band_top + (band_h - rows_max * lyr_size) / 2))
+    # Once the row cap frees up height, a block rarely fills the band, so
+    # centre it there rather than hanging it from the top. Each block is
+    # centred on its own depth (a wrapped line makes a block taller than
+    # its neighbours), which each event carries in its own MarginV.
+    def margin_for(rows: int) -> int:
+        return round(max(band_top, band_top + (band_h - rows * lyr_size) / 2))
+
+    lyr_margin_v = margin_for(rows_max)
     block_title_size = max(18, round(height * 0.0325 * scale))
     block_author_size = max(12, round(height * 0.024))
     # The song title may use its own face (brand "title_font"), e.g. a
@@ -577,8 +579,9 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                     rows.append(f"{tag}{_escape(part)}")
             text = "\\N".join(rows)
             fad = f"{{\\fad({FADE_MS if i == 0 else 0},{FADE_MS if i == len(block) - 1 else 0})}}"
+            mv = margin_for(len(rows))
             events.append(
-                f"Dialogue: 1,{_ass_time(start)},{_ass_time(end)},Lyr,,0,0,0,,{fad}{text}"
+                f"Dialogue: 1,{_ass_time(start)},{_ass_time(end)},Lyr,,0,0,{mv},,{fad}{text}"
             )
 
     return header + "\n".join(events) + "\n"
