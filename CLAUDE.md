@@ -31,6 +31,30 @@ brand JSON; add `Family:600,900` to `extra-fonts.txt` only for weights no
 brand references yet. Verify with `fc-list | grep "<Family>"` — every
 weight must appear before rendering, or libass silently substitutes.
 
+## Lyric typography (showcase layout)
+
+Size is **searched, not set**: `build_showcase_ass` finds the largest
+size where every row fits the lyric column and every block fits the
+band. Three things control it, and none of them is a hardcoded pixel
+size:
+
+- **`lines` (brand)** caps a block at that many *rendered rows*, not
+  lyric lines — a long line draws as two rows, so counting lines let a
+  block reach twice its intended depth and forced the type small.
+- **`lyric_max_rows` (brand, default 2)** is the wrap budget: the most
+  rows one lyric line may take. This is what really decides how big the
+  type can be, since the search grows the size until some line needs an
+  extra row.
+- **`lyric_scale` (brand)** pushes the size cap. Derive it with
+  `python3 tools/lyric_scale.py brands/<brand>.json songs/<album>/*.txt`,
+  which prints the maximum for each wrap budget and names the line that
+  binds. **It is per-album** — it depends on the typeface's width and on
+  that album's longest line, so a value tuned for one font is meaningless
+  for another.
+
+Blocks are centred in the band on their own row count, then lifted 10%
+(`OPTICAL_LIFT`) because the optical centre sits above the geometric one.
+
 ## Layouts
 
 A brand's `layout` key selects the look: `"showcase"` (album art +
@@ -84,11 +108,27 @@ python3 -m unittest discover -s tests -v
 - 16-song catalog (4 EPs × 3 + 4 singles): rendered and delivered
   2026-09-05.
 - *Peregrino* album (CD2, 13 tracks): rendered and delivered 2026-09-08.
-- *Vasos de Barro* (CD1, 11 tracks): in progress. Lyrics PDF and artwork
-  are filed (`assets/references/`, `assets/albums/vasos-de-barro/`); all
-  11 songs staged from the PDF in `songs/vasos-de-barro/`; brand is
-  `brands/vasos-de-barro.json` (Crimson Pro — Black title, Bold credits,
-  SemiBold Italic lyrics in #DA9864). Track 7, the title track, is
-  rendered and delivered; the other 10 still need timing + renders.
-  Its recording deviates from the PDF: a spoken 2 Coríntios intro, "Ê ô
-  ê" vocal refrains, and a spoken closing word, none of them in the PDF.
+- *Vasos de Barro* (CD1, 11 tracks): rendering 2026-09-08. Lyrics PDF and
+  artwork filed (`assets/references/`, `assets/albums/vasos-de-barro/`);
+  all 11 songs staged from the PDF and timed (`songs/<slug>.lrc`, with
+  the `.spec` files they were generated from). Brand is
+  `brands/vasos-de-barro.json` — Crimson Pro throughout: Black title,
+  Bold credits, SemiBold Italic lyrics in #DA9864, `lyric_scale` 1.12.
+  Recording deviations to keep: track 2 sings an "Ai, meu Deus de toda
+  graça" verse the PDF omits, track 3 adds an outro ("o Senhor da
+  história"), track 5 closes naming Christ the Lamb of God, track 7 has
+  a spoken 2 Coríntios intro plus "Ê ô ê" refrains and a spoken close,
+  and track 8 has a spoken bridge.
+
+### Two traps this album exposed
+
+- **Both albums' MP3s share the repo root and the same NN prefixes**
+  (CD2/Peregrino titles are ALL CAPS, CD1's are Title Case), so `07
+  *.mp3` silently resolves to the wrong album. Resolve audio through
+  `songs/vasos-de-barro/tracks.tsv`, and match NFC-normalized — the
+  on-disk names are decomposed, so a literal accented path from the
+  shell will not match.
+- **`showwaves` corrupts non-primary colours** under its default
+  `draw=scale` on current ffmpeg builds — the brand-coloured waveform
+  rendered green. The renderer now passes `draw=full` and a colour per
+  channel (stereo would otherwise fall back to the default palette).
