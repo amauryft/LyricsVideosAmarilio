@@ -21,6 +21,16 @@ YouTube are blocked; GitHub release downloads and Google Fonts work).
 `brands/extra-fonts.txt`. To add a font for a future brand, add its Google
 Fonts family name to that txt file — no hook changes needed.
 
+**Three or more weights in one brand**: ASS can only toggle bold, so a
+third weight has to be addressed by its own family name — fontconfig
+registers named instances like `Crimson Pro SemiBold` and `Crimson Pro
+Black`. Google Fonts has no such families (only `Crimson Pro` at weight
+600/900), so the hook splits a trailing style word off the name and
+fetches the base family at that weight. Just name the instance in the
+brand JSON; add `Family:600,900` to `extra-fonts.txt` only for weights no
+brand references yet. Verify with `fc-list | grep "<Family>"` — every
+weight must appear before rendering, or libass silently substitutes.
+
 ## Layouts
 
 A brand's `layout` key selects the look: `"showcase"` (album art +
@@ -74,8 +84,11 @@ python3 -m unittest discover -s tests -v
 - 16-song catalog (4 EPs × 3 + 4 singles): rendered and delivered
   2026-09-05.
 - *Peregrino* album (CD2, 13 tracks): rendered and delivered 2026-09-08.
-- *Vasos de Barro* (CD1): sources being staged — root MP3s
-  ("NN TÍTULO.mp3", decomposed Unicode: address with shell globs), lyrics
-  PDF `CD1 - VASOS DE BARRO asLetras.pdf`, artwork
-  `Vasos de barro BG framed.png` / `vasos teh barro cover.png`. No brand
-  JSON or `.lrc` files yet.
+- *Vasos de Barro* (CD1, 11 tracks): in progress. Lyrics PDF and artwork
+  are filed (`assets/references/`, `assets/albums/vasos-de-barro/`); all
+  11 songs staged from the PDF in `songs/vasos-de-barro/`; brand is
+  `brands/vasos-de-barro.json` (Crimson Pro — Black title, Bold credits,
+  SemiBold Italic lyrics in #DA9864). Track 7, the title track, is
+  rendered and delivered; the other 10 still need timing + renders.
+  Its recording deviates from the PDF: a spoken 2 Coríntios intro, "Ê ô
+  ê" vocal refrains, and a spoken closing word, none of them in the PDF.

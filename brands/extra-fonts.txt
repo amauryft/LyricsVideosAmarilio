@@ -2,6 +2,12 @@
 # beyond whatever the brands/*.json files already reference.
 # One family name per line; '#' starts a comment. The SessionStart hook
 # installs regular/bold/italic of each family listed here.
+#
+# Add ":<weights>" to pull specific weights too, e.g. "Crimson Pro:600,900".
+# A brand that names a weight as its family ("Crimson Pro SemiBold") gets
+# that weight requested automatically, so listing it here is only needed
+# for weights no brand references yet.
 Libre Caslon Text   # credits font across the catalog
 Poppins             # lyrics/titles (Peregrino and onward)
 Playfair Display    # legacy Sessenteando-era titles; keep available
+Crimson Pro:600,900 # Vasos de Barro: SemiBold Italic lyrics, Black titles
