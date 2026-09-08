@@ -144,19 +144,27 @@ These are the standing rules for the whole project:
 - **Typography rule — maximize the lyric size**: the showcase layout
   sizes lyrics by real font metrics (visual em, normalized with
   `_font_scale`, so switching fonts never shrinks the text) and searches
-  for the largest size that still fits two ways: every row inside the
-  lyric column, and every block inside the band. Two rules make that
-  size big rather than timid — blocks are capped at N *rendered rows*
-  (brand `lines`, normally 4), NOT N lyric lines, because a long line
-  draws as two rows and line-counting let a block reach twice its
-  intended depth; and long lines wrap by measurement (`wrap_lyric`),
-  taking a third row only when that is what fits. The block is centred
-  vertically in the band (album-art top down to 0.82h, keeping a clear
-  strip above the waveform), anchored on the tallest block so stanzas
-  don't jump. Brand `lyric_scale` pushes the size cap per album — Vasos
-  de Barro runs 1.10, which measured across all 229 album lines needs no
-  third row anywhere. All automatic in `build_showcase_ass` — don't
-  hardcode font sizes.
+  for the largest size that still fits: every row inside the lyric
+  column, and every block inside the band. Two things make that size big
+  rather than timid — blocks cap at N *rendered rows* (brand `lines`,
+  normally 4), NOT N lyric lines, since a long line draws as two rows and
+  line-counting let a block reach twice its intended depth; and long
+  lines wrap by measurement (`wrap_lyric`), not character count.
+  **The wrap budget is what decides how far the type can be pushed**:
+  `lyric_max_rows` (default 2) is the most rows one lyric line may
+  occupy, and the largest workable size is the one where no line in the
+  album exceeds it. Derive an album's number with `python3
+  tools/lyric_scale.py brands/<brand>.json songs/<album>/*.txt` and put
+  it in the brand as `lyric_scale` — **it is per-album, because it
+  depends on the typeface's width and on that album's longest line, so a
+  value tuned for one font does not carry to another.** For Vasos de
+  Barro, allowing no wrap at all gives 63px (its 55-character line in
+  *Rolo Holístico* binds everything), one wrap gives 122px, two gives
+  166px; the album ships at `lyric_scale` 1.12 = the one-wrap maximum.
+  The block is centred vertically in the band (album-art top down to
+  0.82h, keeping a clear strip above the waveform), anchored on the
+  tallest block so stanzas don't jump. All automatic in
+  `build_showcase_ass` — don't hardcode font sizes.
 - **Highlight handoff**: inside a block the highlight crossfades
   between lines over 150ms (`HIGHLIGHT_FADE_MS`) — never an instant
   snap, never slower than ~300ms. Applies to the `columns` layout too.

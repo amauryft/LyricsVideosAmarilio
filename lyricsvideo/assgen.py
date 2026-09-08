@@ -28,24 +28,28 @@ _BLOCK_TITLE_CHARS_PER_LINE = 19
 
 def wrap_lyric(
     text: str, font: str, em: float, avail_w: float,
-    bold: bool = True, italic: bool = False, max_rows: int = 3,
-) -> list[str]:
+    bold: bool = True, italic: bool = False, max_rows: int = 2,
+) -> tuple[list[str], bool]:
     """Break a lyric line into the fewest rows that each fit avail_w.
 
-    Character-count splitting (see _split_lyric) can't know whether a row
-    actually fits the column, which caps the type at whatever size keeps
-    every two-way split inside it. Measuring instead lets a genuinely long
-    line take a third row so the rest of the song can be set larger.
+    Returns (rows, fits). Character-count splitting (see _split_lyric)
+    can't know whether a row actually fits the column, which caps the type
+    at whatever size keeps every two-way split inside it. Measuring
+    instead lets the size be pushed until the wrap budget runs out:
+    `fits` is False when even max_rows rows cannot hold the line, which is
+    the signal to stop growing the type.
     """
     words = tuple(text.split())
     if not words:
-        return [text]
-    for n in range(1, min(max_rows, len(words)) + 1):
+        return [text], True
+    limit = min(max_rows, len(words))
+    rows = [text]
+    for n in range(1, limit + 1):
         rows = _balanced_split(words, n, font)
         widest = max(_text_width(r, 100, font, bold, italic) for r in rows)
         if widest * em / 100.0 <= avail_w:
-            return rows
-    return _balanced_split(words, min(max_rows, len(words)), font)
+            return rows, True
+    return rows, False
 
 
 def _split_lyric(text: str, max_chars: int = 30) -> list[str]:
@@ -400,27 +404,30 @@ def build_showcase_ass(
     band_top = height * g["cover_y"]
     band_h = height * (0.82 - g["cover_y"])
     max_rows = max(1, block_size)
+    # How many rows one lyric line may occupy. This is the budget that
+    # decides how far the type can be pushed: a bigger size wraps more
+    # lines, and the largest workable size is the one where no line needs
+    # more rows than this. Raising it trades reading comfort for size.
+    wrap_rows = max(1, int(getattr(brand, "lyric_max_rows", 2) or 2))
 
     # Wrapping and size are mutually dependent: a bigger size needs more
     # rows per line, and more rows leave each row less height. So search
     # sizes from the cap downward and take the largest that fits both ways
     # — every row inside the column, every block inside the band.
     def layout_at(em: float):
-        wrapped = {
+        results = {
             id(line): wrap_lyric(line.text, theme.font, em, avail_w,
-                                 bold=lyr_bold, italic=lyr_italic)
+                                 bold=lyr_bold, italic=lyr_italic,
+                                 max_rows=wrap_rows)
             for line in lyrics.lines
         }
+        wrapped = {k: v[0] for k, v in results.items()}
+        all_fit = all(v[1] for v in results.values())
         groups = group_blocks_by_rows(
             lyrics.lines, max_rows, rows_of=lambda ln: len(wrapped[id(ln)])
         )
         rows = max((sum(len(wrapped[id(l)]) for l in b) for b in groups), default=1)
-        widest = max(
-            (_text_width(r, 100, theme.font, bold=lyr_bold, italic=lyr_italic)
-             for parts in wrapped.values() for r in parts),
-            default=1.0,
-        )
-        fits = widest * em / 100.0 <= avail_w and rows * em * scale <= band_h
+        fits = all_fit and rows * em * scale <= band_h
         return wrapped, groups, rows, fits
 
     # Brand "lyric_scale" sets how hard to push the type; the env var is a

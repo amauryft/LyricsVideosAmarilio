@@ -39,6 +39,7 @@ _BRAND_KEYS = _THEME_KEYS | {
     "block_bg", "block_alpha", "block_text_color", "cover_border",
     "label", "intro", "secondary_font", "title_font",
     "lyric_italic", "lyric_bold", "author_bold", "lyric_scale",
+    "lyric_max_rows",
 }
 
 
@@ -76,7 +77,16 @@ class Brand:
     # Multiplies the fitted lyric size cap. The auto-fit still guarantees
     # every row fits the column and every block the band, so raising this
     # buys bigger type at the cost of more lines wrapping to a second row.
+    # Tune it per brand: the right value depends on the typeface's width
+    # and metrics, so a number chosen for one font does not carry to
+    # another. Check the wrap cost for the album's own lines before
+    # raising it.
     lyric_scale: float = 1.0
+    # Wrap budget: the most rows one lyric line may occupy. This is what
+    # actually decides how large the type can be — the fitter grows the
+    # size until some line would need more rows than this. 2 keeps every
+    # line to at most one wrap.
+    lyric_max_rows: int = 2
     # Render the strip author line bold (the intro credits already are).
     author_bold: bool = False
 
@@ -103,6 +113,8 @@ def load_brand(path: str | Path) -> Brand:
         brand.block_alpha = float(data["block_alpha"])
     if "lyric_scale" in data:
         brand.lyric_scale = float(data["lyric_scale"])
+    if "lyric_max_rows" in data:
+        brand.lyric_max_rows = int(data["lyric_max_rows"])
     if "lines" in data:
         brand.lines = int(data["lines"])
     if "intro" in data:
