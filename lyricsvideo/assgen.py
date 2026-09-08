@@ -160,7 +160,7 @@ def showcase_block_metrics(title: str | None) -> tuple[int, float, float]:
     return lines, strip_h, author_off
 
 FADE_MS = 250
-HILITE_FADE_MS = 450  # highlight crossfade between lines inside a block
+HIGHLIGHT_FADE_MS = 150  # in-block highlight handoff: new line fades up, old fades down
 BLOCK_GAP_BREAK = 2.5  # a silence this long starts a new lyric block
 BLOCK_PREROLL = 1.2  # a new block appears this early so viewers can refocus
 TITLE_CARD_MIN_LEAD = 2.5  # only show a title card if lyrics start this late
@@ -441,17 +441,6 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
     active_tag = "{" + _color_tag(theme.text_color) + "}"
     dim_tag = "{" + _color_tag(theme.dim_color) + "}"
-    # When the highlight moves to the next line inside a block, crossfade
-    # the two lines' colors instead of snapping (block in/out fades are
-    # separate and unchanged).
-    to_active = (
-        "{" + _color_tag(theme.dim_color)
-        + f"\\t(0,{HILITE_FADE_MS},{_color_tag(theme.text_color)})}}"
-    )
-    to_dim = (
-        "{" + _color_tag(theme.text_color)
-        + f"\\t(0,{HILITE_FADE_MS},{_color_tag(theme.dim_color)})}}"
-    )
     prev_block_end = intro_end
     for block in blocks:
         for i, line in enumerate(block):
@@ -467,10 +456,17 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 continue
             rows = []
             for j, other in enumerate(block):
-                if j == i:
-                    tag = active_tag if i == 0 else to_active
+                # The highlight hands off smoothly inside a block: the line
+                # gaining it fades up from dim while the one losing it fades
+                # back down (\t color transform from the event's start).
+                if j == i and i > 0:
+                    tag = ("{" + _color_tag(theme.dim_color)
+                           + f"\\t(0,{HIGHLIGHT_FADE_MS},{_color_tag(theme.text_color)})}}")
+                elif j == i:
+                    tag = active_tag
                 elif j == i - 1:
-                    tag = to_dim
+                    tag = ("{" + _color_tag(theme.text_color)
+                           + f"\\t(0,{HIGHLIGHT_FADE_MS},{_color_tag(theme.dim_color)})}}")
                 else:
                     tag = dim_tag
                 # Long lines break roughly in half; both rows share the
@@ -551,15 +547,15 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
     active_tag = "{" + _color_tag(theme.text_color) + "}"
     dim_tag = "{" + _color_tag(theme.dim_color) + "}"
-    # Gentle highlight crossfade between lines inside a block (see the
-    # showcase layout; block in/out fades are unchanged).
+    # The in-block highlight handoff crossfades here too (see the showcase
+    # layout; block in/out fades are unchanged).
     to_active = (
         "{" + _color_tag(theme.dim_color)
-        + f"\\t(0,{HILITE_FADE_MS},{_color_tag(theme.text_color)})}}"
+        + f"\\t(0,{HIGHLIGHT_FADE_MS},{_color_tag(theme.text_color)})}}"
     )
     to_dim = (
         "{" + _color_tag(theme.text_color)
-        + f"\\t(0,{HILITE_FADE_MS},{_color_tag(theme.dim_color)})}}"
+        + f"\\t(0,{HIGHLIGHT_FADE_MS},{_color_tag(theme.dim_color)})}}"
     )
     for block in group_blocks(lyrics.lines, max(1, block_size)):
         for i, line in enumerate(block):

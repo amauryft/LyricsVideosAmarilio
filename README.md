@@ -136,15 +136,23 @@ These are the standing rules for the whole project:
   `--resolution 960x540` for test renders; work one video at a time.
 - **Harmony rule**: in the showcase layout the live waveform matches the
   highlighted lyric color (automatic in the renderer).
-- **Highlight rule**: when the highlight moves from one line to the next
-  inside a lyric block, the colors crossfade gently (~0.45 s) instead of
-  snapping (automatic in the renderer; block-to-block transitions keep
-  their own fades).
 - **Anticipation rule**: lyrics always run ahead of the audio — every
   line appears ~1.5s early (renderer `--lead`, default 1.5; use up to ~2
   when a song's timings feel late) and a new stanza block appears an
   extra ~1.2s earlier still, so viewers can refocus before the singing
   catches up. Never let the lyrics lag the voice.
+- **Typography rule — maximize the lyric size**: the showcase layout
+  sizes lyrics by real font metrics (visual em, normalized with
+  `_font_scale`, so switching fonts never shrinks the text) and
+  auto-fits each song as large as possible: grow toward the target
+  (0.066h em) and back off only when the song's widest row would
+  overflow the column or its tallest block would crowd the layout. The
+  block hangs from the TOP of the album art (`cover_y`) and may run
+  down to 0.82h, always keeping a clear band above the waveform. All
+  automatic in `build_showcase_ass` — don't hardcode font sizes.
+- **Highlight handoff**: inside a block the highlight crossfades
+  between lines over 150ms (`HIGHLIGHT_FADE_MS`) — never an instant
+  snap, never slower than ~300ms. Applies to the `columns` layout too.
 
 ## Per-song workflow (the pattern)
 
