@@ -250,9 +250,13 @@ def render_video(
                 f",fade=t=in:st={intro_end:.2f}:d=0.6:alpha=1"
                 if showcase and intro_end > 0 else ""
             )
+            # One color per channel (stereo would fall back to the default
+            # palette for channel 2), and draw=full: the default draw=scale
+            # corrupts non-primary colors on current ffmpeg builds.
             filters.append(
                 f"[1:a]showwaves=s={width}x{wave_h}:mode=cline:rate=30"
-                f":colors={wave_color}@0.55,format=rgba{wave_fade}[wave]"
+                f":colors={wave_color}@0.55|{wave_color}@0.55:draw=full,"
+                f"format=rgba{wave_fade}[wave]"
             )
             filters.append(
                 f"{base}[wave]overlay=x=0:y={height - wave_h - round(height * 0.04)}"

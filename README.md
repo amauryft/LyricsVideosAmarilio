@@ -92,6 +92,15 @@ These are the standing rules for the whole project:
   lyrics/titles with Libre Caslon Text credits via the `secondary_font`
   brand key, and the showcase layout now auto-fits lyric size per song
   and hangs the block from the top of the album art.
+- **The *Vasos de Barro* album (CD1, 11 tracks)**: IN PROGRESS — sources
+  arrived 2026-09-08: lyrics PDF in `assets/references/`, staged per-song
+  in `songs/vasos-de-barro/`, root MP3s "NN Título.mp3", art in
+  `assets/albums/vasos-de-barro/`. The brand
+  (`brands/vasos-de-barro.json`) is all Crimson Pro: song title in the
+  Black weight, author + "Lyrics Video" tag in Bold, lyrics in SemiBold
+  Italic colored #DA9864 (brand keys `title_font`, `lyric_italic`,
+  `lyric_bold`, `author_bold`). Track 7 (title track) rendered and
+  delivered 2026-09-08; the other 10 tracks still need timing + renders.
 - **Recordings can deviate from the PDF**: match what is actually sung.
   Known case: the *Ele é Bom Demais* recording skips the "A ira do meu
   Senhor" verse entirely (chorus + verse 2 only). When a transcription
@@ -127,6 +136,10 @@ These are the standing rules for the whole project:
   `--resolution 960x540` for test renders; work one video at a time.
 - **Harmony rule**: in the showcase layout the live waveform matches the
   highlighted lyric color (automatic in the renderer).
+- **Highlight rule**: when the highlight moves from one line to the next
+  inside a lyric block, the colors crossfade gently (~0.45 s) instead of
+  snapping (automatic in the renderer; block-to-block transitions keep
+  their own fades).
 - **Anticipation rule**: lyrics always run ahead of the audio — every
   line appears ~1.5s early (renderer `--lead`, default 1.5; use up to ~2
   when a song's timings feel late) and a new stanza block appears an
@@ -171,9 +184,14 @@ the network policy. What works:
   → copy `bin/ffmpeg` + `bin/ffprobe` to `/usr/local/bin`). GitHub
   release downloads pass the proxy; `raw.githubusercontent.com` and apt
   mirrors do not.
-- **Font**: every brand uses **Libre Caslon Text** only — fetch the ttf
-  URLs from `fonts.googleapis.com/css2?family=Libre+Caslon+Text`, save
-  to `~/.fonts`, run `fc-cache -f`.
+- **Fonts**: fetch each brand's ttf URLs from
+  `fonts.googleapis.com/css2?family=<Family>` (with a plain curl
+  user-agent the API serves static instances per weight), save to
+  `~/.fonts`, run `fc-cache -f`. Libre Caslon Text covers the 16-song
+  catalog, Poppins + Libre Caslon Text the Peregrino album, and Crimson
+  Pro (weights 400/600/700/900, roman + italic — the static instances
+  register the named families "Crimson Pro SemiBold" / "Crimson Pro
+  Black" that the brand references) the Vasos de Barro album.
 - **pip**: `sherpa-onnx numpy pillow pypdf` (pillow for the contact
   sheet, pypdf to read the lyrics PDF). Whisper models per the
   sherpa-onnx one-time setup below.

@@ -1,0 +1,21 @@
+{
+  "layout": "showcase",
+  "font": "Crimson Pro SemiBold",
+  "title_font": "Crimson Pro Black",
+  "secondary_font": "Crimson Pro",
+  "lyric_italic": true,
+  "lyric_bold": false,
+  "author_bold": true,
+  "artist": "Amarilio Fontenele",
+  "label": "Lyrics Video",
+  "lines": 4,
+  "text_color": "#DA9864",
+  "dim_color": "#8A6A50",
+  "block_bg": "#1C120B",
+  "block_alpha": 0.68,
+  "block_text_color": "#F2E7D5",
+  "cover_border": "#DA9864",
+  "wave_color": "#DA9864",
+  "background": "../assets/albums/vasos-de-barro/bg.png",
+  "cover": "../assets/albums/vasos-de-barro/cover.png"
+}

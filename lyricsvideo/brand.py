@@ -37,7 +37,8 @@ _BRAND_KEYS = _THEME_KEYS | {
     "layout", "title_color", "credit_color", "background", "bg_wash",
     "cover", "album", "artist", "credit", "lines",
     "block_bg", "block_alpha", "block_text_color", "cover_border",
-    "label", "intro", "secondary_font",
+    "label", "intro", "secondary_font", "title_font",
+    "lyric_italic", "lyric_bold", "author_bold",
 }
 
 
@@ -64,6 +65,16 @@ class Brand:
     # Optional distinct face for the author/label credits (intro author line,
     # "Lyrics Video" tag, block author) while lyrics/titles use "font".
     secondary_font: str | None = None
+    # Optional distinct face for the song title (intro + block strip), e.g.
+    # a Black-weight cut while the lyrics use a lighter one.
+    title_font: str | None = None
+    # Showcase lyric styling. Set lyric_bold false when the family name
+    # already carries the weight (e.g. "Crimson Pro SemiBold") so libass
+    # doesn't embolden the face synthetically on top of it.
+    lyric_italic: bool = False
+    lyric_bold: bool = True
+    # Render the strip author line bold (the intro credits already are).
+    author_bold: bool = False
 
     def apply_to(self, theme: Theme) -> Theme:
         return replace(theme, **self.theme_overrides) if self.theme_overrides else theme
@@ -79,7 +90,7 @@ def load_brand(path: str | Path) -> Brand:
     brand = Brand(theme_overrides={k: data[k] for k in _THEME_KEYS if k in data})
     for key in ("layout", "title_color", "credit_color", "album", "artist", "credit",
                 "block_bg", "block_text_color", "cover_border", "label",
-                "secondary_font"):
+                "secondary_font", "title_font"):
         if key in data:
             setattr(brand, key, data[key])
     if "bg_wash" in data:
@@ -90,6 +101,9 @@ def load_brand(path: str | Path) -> Brand:
         brand.lines = int(data["lines"])
     if "intro" in data:
         brand.intro = bool(data["intro"])
+    for key in ("lyric_italic", "lyric_bold", "author_bold"):
+        if key in data:
+            setattr(brand, key, bool(data[key]))
     for key in ("background", "cover"):
         if data.get(key):
             resolved = (path.parent / data[key]).resolve()

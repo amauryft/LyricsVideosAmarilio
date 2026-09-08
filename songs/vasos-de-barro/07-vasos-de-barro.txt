@@ -1,0 +1,23 @@
+# Vasos de Barro (CD1) — Faixa 7 (faixa-título)
+# Título: Vasos de Barro
+# Autor: Amarílio Fontenele
+# Tom: G
+# Fonte: assets/references/CD1 - VASOS DE BARRO asLetras.pdf
+# Resolvido na gravação (2026-09-08): a gravação abre com um vocalise
+# ("Ê ô ê...") e uma introdução falada (2 Co 4:6-7), repete o refrão
+# três vezes com a ponte, e fecha com uma palavra falada — tudo
+# registrado no songs/vasos-de-barro.lrc final.
+
+Grande é o tesouro
+Em vasos de barro
+Para que todo o poder
+Venha do Deus de amor
+Temos grande tesouro
+Em vasos de barro
+Salvos pelo poder
+De Jesus Salvador
+
+Atribulados, mas não angustiados
+Sim, perplexos, mas não desanimados
+Perseguidos, mas não desamparados
+Até abatidos, porém não destruídos

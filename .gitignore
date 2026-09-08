@@ -23,6 +23,7 @@ songs/*
 !songs/*.lrc
 # Official album lyrics staged for future videos (text only; audio rules above still apply)
 !songs/peregrino/
+!songs/vasos-de-barro/
 
 # Editors / OS
 .DS_Store

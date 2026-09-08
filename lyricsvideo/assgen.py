@@ -48,10 +48,11 @@ _INTRO_RIGHT_PAD = 0.059
 
 
 @functools.lru_cache(maxsize=None)
-def _font_file(font: str, bold: bool) -> str | None:
+def _font_file(font: str, bold: bool, italic: bool = False) -> str | None:
+    pattern = font + (":bold" if bold else "") + (":italic" if italic else "")
     try:
         out = subprocess.run(
-            ["fc-match", "-f", "%{file}", f"{font}:bold" if bold else font],
+            ["fc-match", "-f", "%{file}", pattern],
             capture_output=True, text=True, timeout=5,
         )
         return out.stdout.strip() or None
@@ -60,12 +61,14 @@ def _font_file(font: str, bold: bool) -> str | None:
 
 
 @functools.lru_cache(maxsize=4096)
-def _text_width(text: str, size: int, font: str, bold: bool = True) -> float:
+def _text_width(
+    text: str, size: int, font: str, bold: bool = True, italic: bool = False
+) -> float:
     """Pixel width of text, measured with the real font when possible."""
     try:
         from PIL import ImageFont
 
-        f = ImageFont.truetype(_font_file(font, bold), size)
+        f = ImageFont.truetype(_font_file(font, bold, italic), size)
         try:
             f.set_variation_by_axes([700 if bold else 400])
         except Exception:
@@ -157,6 +160,7 @@ def showcase_block_metrics(title: str | None) -> tuple[int, float, float]:
     return lines, strip_h, author_off
 
 FADE_MS = 250
+HILITE_FADE_MS = 450  # highlight crossfade between lines inside a block
 BLOCK_GAP_BREAK = 2.5  # a silence this long starts a new lyric block
 BLOCK_PREROLL = 1.2  # a new block appears this early so viewers can refocus
 TITLE_CARD_MIN_LEAD = 2.5  # only show a title card if lyrics start this late
@@ -326,6 +330,8 @@ def build_showcase_ass(
     # Then auto-fit: grow to the target, shrinking only if the widest row
     # would overflow the column or the tallest block would crowd the strip.
     scale = _font_scale(theme.font)
+    lyr_bold = getattr(brand, "lyric_bold", True)
+    lyr_italic = getattr(brand, "lyric_italic", False)
     blocks = group_blocks(lyrics.lines, max(1, block_size))
     all_rows = [
         part
@@ -335,7 +341,10 @@ def build_showcase_ass(
         if part
     ]
     avail_w = width - round(width * g["lyr_left"]) - round(width * g["lyr_right"])
-    widest = max((_text_width(r, 100, theme.font, bold=True) for r in all_rows), default=1.0)
+    widest = max(
+        (_text_width(r, 100, theme.font, bold=lyr_bold, italic=lyr_italic) for r in all_rows),
+        default=1.0,
+    )
     rows_max = max(
         (sum(len(_split_lyric(line.text)) or 1 for line in block) for block in blocks),
         default=1,
@@ -349,8 +358,11 @@ def build_showcase_ass(
     lyr_size = max(24, round(lyr_em * scale))
     block_title_size = max(18, round(height * 0.0325 * scale))
     block_author_size = max(12, round(height * 0.024))
+    # The song title may use its own face (brand "title_font"), e.g. a
+    # Black-weight cut while the lyrics stay in a lighter one.
+    title_font = getattr(brand, "title_font", None) or theme.font
     _title_text = song_title or lyrics.title or ""
-    il = intro_layout(_title_text, width, height, theme.font)
+    il = intro_layout(_title_text, width, height, title_font)
     intro_title_size = max(28, il["title_size"])
     intro_author_size = max(18, il["author_size"])
     intro_label_size = max(14, il["label_size"])
@@ -368,11 +380,12 @@ def build_showcase_ass(
     # Author/label elements may use their own face (brand "secondary_font"),
     # e.g. Peregrino: Poppins lyrics with the credits kept in Libre Caslon.
     sec_font = getattr(brand, "secondary_font", None) or theme.font
+    block_author_bold = 1 if getattr(brand, "author_bold", False) else 0
 
-    def style(name, size, color, bold, align, ml, mr, mv, font=None):
+    def style(name, size, color, bold, align, ml, mr, mv, font=None, italic=0):
         return (
             f"Style: {name},{font or theme.font},{size},{_ass_color(color)},{_ass_color(color)},"
-            f"{hidden},{hidden},{bold},0,0,0,100,100,0,0,1,0,0,{align},{ml},{mr},{mv},1"
+            f"{hidden},{hidden},{bold},{italic},0,0,100,100,0,0,1,0,0,{align},{ml},{mr},{mv},1"
         )
 
     header = f"""[Script Info]
@@ -385,10 +398,10 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-{style("Lyr", lyr_size, theme.text_color, 1, 7, round(width * g["lyr_left"]), round(width * g["lyr_right"]), round(height * g["cover_y"]))}
-{style("BlockTitle", block_title_size, block_text, 1, 7, round(width * g["block_x"]) + pad_x, block_mr, round(height * (g["block_y"] + 0.014)))}
-{style("BlockAuthor", block_author_size, block_text, 0, 7, round(width * g["block_x"]) + pad_x, block_mr, round(height * (g["block_y"] + author_off)), font=sec_font)}
-{style("IntroTitle", intro_title_size, theme.text_color, 1, 7, round(width * g["intro_text_x"]), round(width * _INTRO_RIGHT_PAD), round(height * intro_title_y))}
+{style("Lyr", lyr_size, theme.text_color, 1 if lyr_bold else 0, 7, round(width * g["lyr_left"]), round(width * g["lyr_right"]), round(height * g["cover_y"]), italic=1 if lyr_italic else 0)}
+{style("BlockTitle", block_title_size, block_text, 1, 7, round(width * g["block_x"]) + pad_x, block_mr, round(height * (g["block_y"] + 0.014)), font=title_font)}
+{style("BlockAuthor", block_author_size, block_text, block_author_bold, 7, round(width * g["block_x"]) + pad_x, block_mr, round(height * (g["block_y"] + author_off)), font=sec_font)}
+{style("IntroTitle", intro_title_size, theme.text_color, 1, 7, round(width * g["intro_text_x"]), round(width * _INTRO_RIGHT_PAD), round(height * intro_title_y), font=title_font)}
 {style("IntroAuthor", intro_author_size, theme.text_color, 1, 7, round(width * g["intro_text_x"]), round(width * _INTRO_RIGHT_PAD), round(height * intro_author_y), font=sec_font)}
 {style("IntroLabel", intro_label_size, theme.dim_color, 1, 7, round(width * g["intro_text_x"]), round(width * _INTRO_RIGHT_PAD), round(height * intro_label_y), font=sec_font)}
 
@@ -428,6 +441,17 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
     active_tag = "{" + _color_tag(theme.text_color) + "}"
     dim_tag = "{" + _color_tag(theme.dim_color) + "}"
+    # When the highlight moves to the next line inside a block, crossfade
+    # the two lines' colors instead of snapping (block in/out fades are
+    # separate and unchanged).
+    to_active = (
+        "{" + _color_tag(theme.dim_color)
+        + f"\\t(0,{HILITE_FADE_MS},{_color_tag(theme.text_color)})}}"
+    )
+    to_dim = (
+        "{" + _color_tag(theme.text_color)
+        + f"\\t(0,{HILITE_FADE_MS},{_color_tag(theme.dim_color)})}}"
+    )
     prev_block_end = intro_end
     for block in blocks:
         for i, line in enumerate(block):
@@ -443,7 +467,12 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 continue
             rows = []
             for j, other in enumerate(block):
-                tag = active_tag if j == i else dim_tag
+                if j == i:
+                    tag = active_tag if i == 0 else to_active
+                elif j == i - 1:
+                    tag = to_dim
+                else:
+                    tag = dim_tag
                 # Long lines break roughly in half; both rows share the
                 # line's highlight state.
                 for part in _split_lyric(other.text):
@@ -522,16 +551,32 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
     active_tag = "{" + _color_tag(theme.text_color) + "}"
     dim_tag = "{" + _color_tag(theme.dim_color) + "}"
+    # Gentle highlight crossfade between lines inside a block (see the
+    # showcase layout; block in/out fades are unchanged).
+    to_active = (
+        "{" + _color_tag(theme.dim_color)
+        + f"\\t(0,{HILITE_FADE_MS},{_color_tag(theme.text_color)})}}"
+    )
+    to_dim = (
+        "{" + _color_tag(theme.text_color)
+        + f"\\t(0,{HILITE_FADE_MS},{_color_tag(theme.dim_color)})}}"
+    )
     for block in group_blocks(lyrics.lines, max(1, block_size)):
         for i, line in enumerate(block):
             start = line.start
             end = block[i + 1].start if i + 1 < len(block) else line.end
             if end <= start:
                 continue
-            text = "\\N".join(
-                f"{active_tag if j == i else dim_tag}{_escape(other.text)}"
-                for j, other in enumerate(block)
-            )
+            parts = []
+            for j, other in enumerate(block):
+                if j == i:
+                    tag = active_tag if i == 0 else to_active
+                elif j == i - 1:
+                    tag = to_dim
+                else:
+                    tag = dim_tag
+                parts.append(f"{tag}{_escape(other.text)}")
+            text = "\\N".join(parts)
             fad = f"{{\\fad({FADE_MS if i == 0 else 0},{FADE_MS if i == len(block) - 1 else 0})}}"
             events.append(
                 f"Dialogue: 1,{_ass_time(start)},{_ass_time(end)},ColLyrics,,0,0,0,,{fad}{text}"
