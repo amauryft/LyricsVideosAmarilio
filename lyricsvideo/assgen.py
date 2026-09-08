@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import functools
+import os
 import subprocess
 from typing import TYPE_CHECKING
 
@@ -23,6 +24,28 @@ SHOWCASE = {
 
 # Roughly how many characters of the block title fit on one line.
 _BLOCK_TITLE_CHARS_PER_LINE = 19
+
+
+def wrap_lyric(
+    text: str, font: str, em: float, avail_w: float,
+    bold: bool = True, italic: bool = False, max_rows: int = 3,
+) -> list[str]:
+    """Break a lyric line into the fewest rows that each fit avail_w.
+
+    Character-count splitting (see _split_lyric) can't know whether a row
+    actually fits the column, which caps the type at whatever size keeps
+    every two-way split inside it. Measuring instead lets a genuinely long
+    line take a third row so the rest of the song can be set larger.
+    """
+    words = tuple(text.split())
+    if not words:
+        return [text]
+    for n in range(1, min(max_rows, len(words)) + 1):
+        rows = _balanced_split(words, n, font)
+        widest = max(_text_width(r, 100, font, bold, italic) for r in rows)
+        if widest * em / 100.0 <= avail_w:
+            return rows
+    return _balanced_split(words, min(max_rows, len(words)), font)
 
 
 def _split_lyric(text: str, max_chars: int = 30) -> list[str]:
@@ -210,6 +233,41 @@ def group_blocks(
     return blocks
 
 
+def group_blocks_by_rows(
+    lines: list[LyricLine], max_rows: int, gap_break: float = BLOCK_GAP_BREAK,
+    rows_of=None,
+) -> list[list[LyricLine]]:
+    """Chunk lines into stanzas of at most max_rows *rendered* rows.
+
+    A long lyric line is drawn as two rows (see _split_lyric), so counting
+    lyric lines understates what is on screen: four long lines fill eight
+    rows and halve the height each row can use, which is what forces the
+    type small. Counting rows instead keeps the block's on-screen depth
+    fixed, so the auto-fit can spend the whole block height on however many
+    rows are actually shown.
+    """
+    max_rows = max(1, max_rows)
+    if rows_of is None:
+        def rows_of(ln):
+            return len(_split_lyric(ln.text))
+    blocks: list[list[LyricLine]] = []
+    current: list[LyricLine] = []
+    used = 0
+    for line in lines:
+        cost = max(1, rows_of(line))
+        if current and (
+            used + cost > max_rows or line.start - current[-1].end > gap_break
+        ):
+            blocks.append(current)
+            current = []
+            used = 0
+        current.append(line)
+        used += cost
+    if current:
+        blocks.append(current)
+    return blocks
+
+
 def build_ass(
     lyrics: Lyrics,
     theme: Theme,
@@ -332,30 +390,67 @@ def build_showcase_ass(
     scale = _font_scale(theme.font)
     lyr_bold = getattr(brand, "lyric_bold", True)
     lyr_italic = getattr(brand, "lyric_italic", False)
-    blocks = group_blocks(lyrics.lines, max(1, block_size))
-    all_rows = [
-        part
-        for block in blocks
-        for line in block
-        for part in _split_lyric(line.text)
-        if part
-    ]
+    # block_size counts rendered rows, not lyric lines: a long line draws as
+    # two rows, so grouping by lines let a block reach twice this depth and
+    # forced the type down to fit. Capping rows keeps the block's on-screen
+    # depth fixed and lets the auto-fit use the full height.
     avail_w = width - round(width * g["lyr_left"]) - round(width * g["lyr_right"])
-    widest = max(
-        (_text_width(r, 100, theme.font, bold=lyr_bold, italic=lyr_italic) for r in all_rows),
-        default=1.0,
-    )
-    rows_max = max(
-        (sum(len(_split_lyric(line.text)) or 1 for line in block) for block in blocks),
-        default=1,
-    )
-    fit_w_em = avail_w * 100.0 / max(widest, 1.0)
-    # The lyric block hangs from the top of the album art (cover_y) and may
-    # run down to 0.82h, keeping a clear band above the waveform.
-    fit_h_em = height * (0.82 - g["cover_y"]) / (rows_max * scale)
-    target_em = height * 0.066
-    lyr_em = max(height * 0.042, min(target_em, fit_w_em, fit_h_em))
+    # The lyric band runs from the top of the album art (cover_y) down to
+    # 0.82h, keeping a clear strip above the waveform.
+    band_top = height * g["cover_y"]
+    band_h = height * (0.82 - g["cover_y"])
+    max_rows = max(1, block_size)
+
+    # Wrapping and size are mutually dependent: a bigger size needs more
+    # rows per line, and more rows leave each row less height. So search
+    # sizes from the cap downward and take the largest that fits both ways
+    # — every row inside the column, every block inside the band.
+    def layout_at(em: float):
+        wrapped = {
+            id(line): wrap_lyric(line.text, theme.font, em, avail_w,
+                                 bold=lyr_bold, italic=lyr_italic)
+            for line in lyrics.lines
+        }
+        groups = group_blocks_by_rows(
+            lyrics.lines, max_rows, rows_of=lambda ln: len(wrapped[id(ln)])
+        )
+        rows = max((sum(len(wrapped[id(l)]) for l in b) for b in groups), default=1)
+        widest = max(
+            (_text_width(r, 100, theme.font, bold=lyr_bold, italic=lyr_italic)
+             for parts in wrapped.values() for r in parts),
+            default=1.0,
+        )
+        fits = widest * em / 100.0 <= avail_w and rows * em * scale <= band_h
+        return wrapped, groups, rows, fits
+
+    # Brand "lyric_scale" sets how hard to push the type; the env var is a
+    # design-iteration override for auditioning sizes.
+    knob = float(getattr(brand, "lyric_scale", 1.0) or 1.0)
+    try:
+        knob = float(os.environ.get("LYRICSVIDEO_LYR_SCALE", "") or knob)
+    except ValueError:
+        pass
+    cap_em = height * 0.090 * knob
+    floor_em = height * 0.042
+
+    lyr_em = floor_em
+    wrapped, blocks, rows_max, _ = layout_at(floor_em)
+    steps = 48
+    for i in range(steps + 1):
+        em = cap_em - (cap_em - floor_em) * i / steps
+        if em < floor_em:
+            break
+        w2, b2, r2, fits = layout_at(em)
+        if fits:
+            lyr_em, wrapped, blocks, rows_max = em, w2, b2, r2
+            break
     lyr_size = max(24, round(lyr_em * scale))
+    # Once the row cap frees up height, a full block rarely fills the band,
+    # so centre it there rather than hanging it from the top. The offset is
+    # computed from the tallest block so every stanza shares one anchor —
+    # centring each block on its own row count would make the text jump
+    # between stanzas of different depth.
+    lyr_margin_v = round(max(band_top, band_top + (band_h - rows_max * lyr_size) / 2))
     block_title_size = max(18, round(height * 0.0325 * scale))
     block_author_size = max(12, round(height * 0.024))
     # The song title may use its own face (brand "title_font"), e.g. a
@@ -398,7 +493,7 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-{style("Lyr", lyr_size, theme.text_color, 1 if lyr_bold else 0, 7, round(width * g["lyr_left"]), round(width * g["lyr_right"]), round(height * g["cover_y"]), italic=1 if lyr_italic else 0)}
+{style("Lyr", lyr_size, theme.text_color, 1 if lyr_bold else 0, 7, round(width * g["lyr_left"]), round(width * g["lyr_right"]), lyr_margin_v, italic=1 if lyr_italic else 0)}
 {style("BlockTitle", block_title_size, block_text, 1, 7, round(width * g["block_x"]) + pad_x, block_mr, round(height * (g["block_y"] + 0.014)), font=title_font)}
 {style("BlockAuthor", block_author_size, block_text, block_author_bold, 7, round(width * g["block_x"]) + pad_x, block_mr, round(height * (g["block_y"] + author_off)), font=sec_font)}
 {style("IntroTitle", intro_title_size, theme.text_color, 1, 7, round(width * g["intro_text_x"]), round(width * _INTRO_RIGHT_PAD), round(height * intro_title_y), font=title_font)}
@@ -469,9 +564,9 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                            + f"\\t(0,{HIGHLIGHT_FADE_MS},{_color_tag(theme.dim_color)})}}")
                 else:
                     tag = dim_tag
-                # Long lines break roughly in half; both rows share the
-                # line's highlight state.
-                for part in _split_lyric(other.text):
+                # A long line spans several rows; they all share the line's
+                # highlight state.
+                for part in wrapped[id(other)]:
                     rows.append(f"{tag}{_escape(part)}")
             text = "\\N".join(rows)
             fad = f"{{\\fad({FADE_MS if i == 0 else 0},{FADE_MS if i == len(block) - 1 else 0})}}"

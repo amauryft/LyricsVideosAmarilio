@@ -143,13 +143,20 @@ These are the standing rules for the whole project:
   catches up. Never let the lyrics lag the voice.
 - **Typography rule — maximize the lyric size**: the showcase layout
   sizes lyrics by real font metrics (visual em, normalized with
-  `_font_scale`, so switching fonts never shrinks the text) and
-  auto-fits each song as large as possible: grow toward the target
-  (0.066h em) and back off only when the song's widest row would
-  overflow the column or its tallest block would crowd the layout. The
-  block hangs from the TOP of the album art (`cover_y`) and may run
-  down to 0.82h, always keeping a clear band above the waveform. All
-  automatic in `build_showcase_ass` — don't hardcode font sizes.
+  `_font_scale`, so switching fonts never shrinks the text) and searches
+  for the largest size that still fits two ways: every row inside the
+  lyric column, and every block inside the band. Two rules make that
+  size big rather than timid — blocks are capped at N *rendered rows*
+  (brand `lines`, normally 4), NOT N lyric lines, because a long line
+  draws as two rows and line-counting let a block reach twice its
+  intended depth; and long lines wrap by measurement (`wrap_lyric`),
+  taking a third row only when that is what fits. The block is centred
+  vertically in the band (album-art top down to 0.82h, keeping a clear
+  strip above the waveform), anchored on the tallest block so stanzas
+  don't jump. Brand `lyric_scale` pushes the size cap per album — Vasos
+  de Barro runs 1.10, which measured across all 229 album lines needs no
+  third row anywhere. All automatic in `build_showcase_ass` — don't
+  hardcode font sizes.
 - **Highlight handoff**: inside a block the highlight crossfades
   between lines over 150ms (`HIGHLIGHT_FADE_MS`) — never an instant
   snap, never slower than ~300ms. Applies to the `columns` layout too.

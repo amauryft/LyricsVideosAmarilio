@@ -5,6 +5,7 @@
   "secondary_font": "Crimson Pro",
   "lyric_italic": true,
   "lyric_bold": false,
+  "lyric_scale": 1.10,
   "author_bold": true,
   "artist": "Amarilio Fontenele",
   "label": "Lyrics Video",
