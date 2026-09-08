@@ -1,0 +1,17 @@
+# CD1 "Vasos de Barro" track manifest: number, slug, exact audio filename.
+# Both albums keep their MP3s in the repo root with the same NN prefixes
+# (CD2/Peregrino titles are ALL CAPS, CD1 titles are Title Case), so a
+# glob like "07 *.mp3" is ambiguous — always resolve through this file.
+# Filenames are stored NFC-normalized; on disk they are decomposed, so
+# match with a glob or normalize before comparing.
+01	amigo-crente	01 Amigo Crente.mp3
+02	o-deus-de-toda-graca	02 O Deus de Toda Graça.mp3
+03	ele-voltara	03 Ele Voltará.mp3
+04	quando-estamos-juntos	04 Quando Estamos Juntos.mp3
+05	o-mundo-nao-entende	05 O Mundo Não Entende.mp3
+06	alegria	06 Alegria.mp3
+07	vasos-de-barro	07 Vasos de Barro.mp3
+08	duvidas	08 Dúvida.mp3
+09	chorinho-da-paz	09 Chorinho da Paz.mp3
+10	bem-aventurados	10 Bem-Aventurados .mp3
+11	rolo-holistico	11 Rolo Holistico.mp3
