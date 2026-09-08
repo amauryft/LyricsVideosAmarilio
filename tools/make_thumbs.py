@@ -45,6 +45,20 @@ SONGS = [
     ("abundante-graca", "Abundante Graça", "simplesmente-graca"),
     ("reviravolta-de-amor", "Reviravolta de Amor", "simplesmente-graca"),
     ("eu-sei-que-um-dia-vira", "Eu Sei Que Um Dia Virá", "simplesmente-graca"),
+    # Peregrino (CD2)
+    ("ah-voce", "Ah Você!", "peregrino"),
+    ("bom-conselho", "Bom Conselho", "peregrino"),
+    ("certeza-das-certezas", "Certeza das Certezas", "peregrino"),
+    ("pelo-chao", "Pelo Chão", "peregrino"),
+    ("consuma-com-sumo-cuidado", "Consuma com Sumo Cuidado", "peregrino"),
+    ("minha-veia-de-poeta", "Minha Veia de Poeta", "peregrino"),
+    ("mas-eu-prefiro-crer", "Mas Eu Prefiro Crer", "peregrino"),
+    ("luz-rebrilhante", "Luz Rebrilhante", "peregrino"),
+    ("nicodemos", "Nicodemos", "peregrino"),
+    ("peregrino", "Peregrino", "peregrino"),
+    ("como-agradecer", "Como Agradecer?", "peregrino"),
+    ("finalmente-irmaos", "Finalmente, Irmãos", "peregrino"),
+    ("samba-enredo-do-cristao", "Samba Enredo do Cristão", "peregrino"),
 ]
 
 

@@ -37,7 +37,7 @@ _BRAND_KEYS = _THEME_KEYS | {
     "layout", "title_color", "credit_color", "background", "bg_wash",
     "cover", "album", "artist", "credit", "lines",
     "block_bg", "block_alpha", "block_text_color", "cover_border",
-    "label", "intro",
+    "label", "intro", "secondary_font",
 }
 
 
@@ -61,6 +61,9 @@ class Brand:
     cover_border: str | None = None  # hard border around the cover art
     label: str = "Lyrics Video"  # small label on the intro screen
     intro: bool = True  # title moment before the first lyric
+    # Optional distinct face for the author/label credits (intro author line,
+    # "Lyrics Video" tag, block author) while lyrics/titles use "font".
+    secondary_font: str | None = None
 
     def apply_to(self, theme: Theme) -> Theme:
         return replace(theme, **self.theme_overrides) if self.theme_overrides else theme
@@ -75,7 +78,8 @@ def load_brand(path: str | Path) -> Brand:
 
     brand = Brand(theme_overrides={k: data[k] for k in _THEME_KEYS if k in data})
     for key in ("layout", "title_color", "credit_color", "album", "artist", "credit",
-                "block_bg", "block_text_color", "cover_border", "label"):
+                "block_bg", "block_text_color", "cover_border", "label",
+                "secondary_font"):
         if key in data:
             setattr(brand, key, data[key])
     if "bg_wash" in data:

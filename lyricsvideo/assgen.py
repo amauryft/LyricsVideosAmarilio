@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 SHOWCASE = {
     "cover_x": 0.0575, "cover_y": 0.111, "cover_w": 0.2275,
     "block_x": 0.0575, "block_y": 0.573, "block_w": 0.2275, "block_h": 0.105,
-    "lyr_left": 0.35, "lyr_right": 0.08,
+    "lyr_left": 0.33, "lyr_right": 0.055,
     "intro_cover_w": 0.34, "intro_cover_x": 0.059, "intro_text_x": 0.45,
 }
 
@@ -158,6 +158,7 @@ def showcase_block_metrics(title: str | None) -> tuple[int, float, float]:
 
 FADE_MS = 250
 BLOCK_GAP_BREAK = 2.5  # a silence this long starts a new lyric block
+BLOCK_PREROLL = 1.2  # a new block appears this early so viewers can refocus
 TITLE_CARD_MIN_LEAD = 2.5  # only show a title card if lyrics start this late
 TITLE_CARD_MAX = 6.0
 
@@ -318,8 +319,35 @@ def build_showcase_ass(
     ffmpeg side pairs with a larger cover overlay until intro_end.
     """
     g = SHOWCASE
-    lyr_size = max(24, round(height * 0.065))
-    block_title_size = max(18, round(height * 0.040))
+    # Size the lyric block in visual em terms so every font fills the column
+    # the same way (ASS Fontsize is ascent+descent, so compact-metric fonts
+    # like Libre Caslon draw larger than tall-metric ones at equal nominal
+    # size — _font_scale normalizes that, as the intro layout already does).
+    # Then auto-fit: grow to the target, shrinking only if the widest row
+    # would overflow the column or the tallest block would crowd the strip.
+    scale = _font_scale(theme.font)
+    blocks = group_blocks(lyrics.lines, max(1, block_size))
+    all_rows = [
+        part
+        for block in blocks
+        for line in block
+        for part in _split_lyric(line.text)
+        if part
+    ]
+    avail_w = width - round(width * g["lyr_left"]) - round(width * g["lyr_right"])
+    widest = max((_text_width(r, 100, theme.font, bold=True) for r in all_rows), default=1.0)
+    rows_max = max(
+        (sum(len(_split_lyric(line.text)) or 1 for line in block) for block in blocks),
+        default=1,
+    )
+    fit_w_em = avail_w * 100.0 / max(widest, 1.0)
+    # The lyric block hangs from the top of the album art (cover_y) and may
+    # run down to 0.82h, keeping a clear band above the waveform.
+    fit_h_em = height * (0.82 - g["cover_y"]) / (rows_max * scale)
+    target_em = height * 0.066
+    lyr_em = max(height * 0.042, min(target_em, fit_w_em, fit_h_em))
+    lyr_size = max(24, round(lyr_em * scale))
+    block_title_size = max(18, round(height * 0.0325 * scale))
     block_author_size = max(12, round(height * 0.024))
     _title_text = song_title or lyrics.title or ""
     il = intro_layout(_title_text, width, height, theme.font)
@@ -337,9 +365,13 @@ def build_showcase_ass(
     # Confine the block texts to the strip so long titles wrap inside it.
     block_mr = width - round(width * (g["block_x"] + g["block_w"])) + pad_x
 
-    def style(name, size, color, bold, align, ml, mr, mv):
+    # Author/label elements may use their own face (brand "secondary_font"),
+    # e.g. Peregrino: Poppins lyrics with the credits kept in Libre Caslon.
+    sec_font = getattr(brand, "secondary_font", None) or theme.font
+
+    def style(name, size, color, bold, align, ml, mr, mv, font=None):
         return (
-            f"Style: {name},{theme.font},{size},{_ass_color(color)},{_ass_color(color)},"
+            f"Style: {name},{font or theme.font},{size},{_ass_color(color)},{_ass_color(color)},"
             f"{hidden},{hidden},{bold},0,0,0,100,100,0,0,1,0,0,{align},{ml},{mr},{mv},1"
         )
 
@@ -353,12 +385,12 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-{style("Lyr", lyr_size, theme.text_color, 1, 7, round(width * g["lyr_left"]), round(width * g["lyr_right"]), round(height * 0.21))}
+{style("Lyr", lyr_size, theme.text_color, 1, 7, round(width * g["lyr_left"]), round(width * g["lyr_right"]), round(height * g["cover_y"]))}
 {style("BlockTitle", block_title_size, block_text, 1, 7, round(width * g["block_x"]) + pad_x, block_mr, round(height * (g["block_y"] + 0.014)))}
-{style("BlockAuthor", block_author_size, block_text, 0, 7, round(width * g["block_x"]) + pad_x, block_mr, round(height * (g["block_y"] + author_off)))}
+{style("BlockAuthor", block_author_size, block_text, 0, 7, round(width * g["block_x"]) + pad_x, block_mr, round(height * (g["block_y"] + author_off)), font=sec_font)}
 {style("IntroTitle", intro_title_size, theme.text_color, 1, 7, round(width * g["intro_text_x"]), round(width * _INTRO_RIGHT_PAD), round(height * intro_title_y))}
-{style("IntroAuthor", intro_author_size, theme.text_color, 1, 7, round(width * g["intro_text_x"]), round(width * _INTRO_RIGHT_PAD), round(height * intro_author_y))}
-{style("IntroLabel", intro_label_size, theme.dim_color, 1, 7, round(width * g["intro_text_x"]), round(width * _INTRO_RIGHT_PAD), round(height * intro_label_y))}
+{style("IntroAuthor", intro_author_size, theme.text_color, 1, 7, round(width * g["intro_text_x"]), round(width * _INTRO_RIGHT_PAD), round(height * intro_author_y), font=sec_font)}
+{style("IntroLabel", intro_label_size, theme.dim_color, 1, 7, round(width * g["intro_text_x"]), round(width * _INTRO_RIGHT_PAD), round(height * intro_label_y), font=sec_font)}
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -396,10 +428,17 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
     active_tag = "{" + _color_tag(theme.text_color) + "}"
     dim_tag = "{" + _color_tag(theme.dim_color) + "}"
-    for block in group_blocks(lyrics.lines, max(1, block_size)):
+    prev_block_end = intro_end
+    for block in blocks:
         for i, line in enumerate(block):
             start = line.start
             end = block[i + 1].start if i + 1 < len(block) else line.end
+            if i == 0:
+                # A new block appears early so viewers can refocus before
+                # the audio reaches it (never overlapping the prior block).
+                start = max(prev_block_end, start - BLOCK_PREROLL)
+            if i == len(block) - 1:
+                prev_block_end = end
             if end <= start:
                 continue
             rows = []

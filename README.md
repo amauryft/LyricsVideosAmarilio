@@ -81,15 +81,17 @@ These are the standing rules for the whole project:
   *Simplesmente Graça* EP's opening track is titled **Abundante Graça**
   (retitled 2026-09-05; the EP name and cover keep "Simplesmente Graça").
   As of 2026-09-05 all 16 videos are rendered and delivered.
-- **Next up — the *Peregrino* album (CD2, 13 tracks)**: official lyrics
-  (`assets/references/CD2 PEREGRINO as Letras.pdf`, staged per-song in
-  `songs/peregrino/`) and audio (branch
-  `claude/lyrics-videos-project-cx2e7p`, root MP3s named "NN TÍTULO.mp3"
-  in decomposed Unicode — address them with shell globs) arrived
-  2026-09-07. Timed lyrics are DONE for all 13 tracks
-  (`songs/<slug>.raw.lrc` + final `songs/<slug>.lrc`). Still missing:
-  the album art as files (`assets/albums/peregrino/cover.png` + `bg.png`)
-  and `brands/peregrino.json` — see `songs/peregrino/README.md`.
+- **The *Peregrino* album (CD2, 13 tracks)**: DONE — all 13 videos
+  rendered and delivered 2026-09-08 (chat copies sent; full-quality
+  files on `videos-delivery`, single file per song, pending the Drive
+  archive pull). Sources: lyrics PDF in `assets/references/`, staged
+  per-song in `songs/peregrino/`, audio on branch
+  `claude/lyrics-videos-project-cx2e7p` (root MP3s "NN TÍTULO.mp3" in
+  decomposed Unicode — address with shell globs), timed lyrics in
+  `songs/<slug>.lrc`. The brand (`brands/peregrino.json`) pairs Poppins
+  lyrics/titles with Libre Caslon Text credits via the `secondary_font`
+  brand key, and the showcase layout now auto-fits lyric size per song
+  and hangs the block from the top of the album art.
 - **Recordings can deviate from the PDF**: match what is actually sung.
   Known case: the *Ele é Bom Demais* recording skips the "A ira do meu
   Senhor" verse entirely (chorus + verse 2 only). When a transcription
@@ -125,6 +127,11 @@ These are the standing rules for the whole project:
   `--resolution 960x540` for test renders; work one video at a time.
 - **Harmony rule**: in the showcase layout the live waveform matches the
   highlighted lyric color (automatic in the renderer).
+- **Anticipation rule**: lyrics always run ahead of the audio — every
+  line appears ~1.5s early (renderer `--lead`, default 1.5; use up to ~2
+  when a song's timings feel late) and a new stanza block appears an
+  extra ~1.2s earlier still, so viewers can refocus before the singing
+  catches up. Never let the lyrics lag the voice.
 
 ## Per-song workflow (the pattern)
 
