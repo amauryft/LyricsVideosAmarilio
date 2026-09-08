@@ -157,6 +157,7 @@ def showcase_block_metrics(title: str | None) -> tuple[int, float, float]:
     return lines, strip_h, author_off
 
 FADE_MS = 250
+HIGHLIGHT_FADE_MS = 300  # in-block highlight handoff: new line fades up, old fades down
 BLOCK_GAP_BREAK = 2.5  # a silence this long starts a new lyric block
 BLOCK_PREROLL = 1.2  # a new block appears this early so viewers can refocus
 TITLE_CARD_MIN_LEAD = 2.5  # only show a title card if lyrics start this late
@@ -443,7 +444,19 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 continue
             rows = []
             for j, other in enumerate(block):
-                tag = active_tag if j == i else dim_tag
+                # The highlight hands off smoothly inside a block: the line
+                # gaining it fades up from dim while the one losing it fades
+                # back down (\t color transform from the event's start).
+                if j == i and i > 0:
+                    tag = ("{" + _color_tag(theme.dim_color)
+                           + f"\\t(0,{HIGHLIGHT_FADE_MS},{_color_tag(theme.text_color)})}}")
+                elif j == i:
+                    tag = active_tag
+                elif j == i - 1:
+                    tag = ("{" + _color_tag(theme.text_color)
+                           + f"\\t(0,{HIGHLIGHT_FADE_MS},{_color_tag(theme.dim_color)})}}")
+                else:
+                    tag = dim_tag
                 # Long lines break roughly in half; both rows share the
                 # line's highlight state.
                 for part in _split_lyric(other.text):
